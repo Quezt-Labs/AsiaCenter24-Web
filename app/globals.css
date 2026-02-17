@@ -1,0 +1,454 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme inline {
+  --color-*: initial;
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(220 20% 10%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(220 20% 10%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(220 20% 10%);
+  --color-primary: hsl(142 76% 36%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(220 14% 96%);
+  --color-secondary-foreground: hsl(220 20% 20%);
+  --color-muted: hsl(220 14% 96%);
+  --color-muted-foreground: hsl(220 10% 46%);
+  --color-accent: hsl(25 95% 53%);
+  --color-accent-foreground: hsl(0 0% 100%);
+  --color-destructive: hsl(0 84% 60%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-success: hsl(142 76% 36%);
+  --color-border: hsl(220 14% 90%);
+  --color-input: hsl(220 14% 90%);
+  --color-ring: hsl(142 76% 36%);
+}
+
+/* Grocery E-commerce Design System
+   Fresh, clean, modern aesthetic inspired by Blinkit/Zepto
+   Primary: Fresh Green | Neutral: Warm Grays | Accent: Orange for deals
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 20% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+
+    /* Fresh Green - Primary brand color */
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 142 76% 94%;
+    --primary-dark: 142 76% 28%;
+
+    /* Warm Gray - Secondary */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 20% 20%;
+
+    /* Muted tones */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
+
+    /* Orange accent for deals/offers */
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Success/Error */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    /* UI Elements */
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 142 76% 36%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 220 10% 26%;
+    --sidebar-primary: 142 76% 36%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 220 14% 90%;
+    --sidebar-ring: 142 76% 36%;
+
+    /* Custom gradients */
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(142 76% 36%) 0%,
+      hsl(160 84% 39%) 100%
+    );
+    --gradient-deal: linear-gradient(
+      135deg,
+      hsl(25 95% 53%) 0%,
+      hsl(38 92% 50%) 100%
+    );
+    --gradient-card: linear-gradient(
+      180deg,
+      hsl(0 0% 100%) 0%,
+      hsl(220 14% 98%) 100%
+    );
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 20% 10% / 0.05);
+    --shadow-md:
+      0 4px 6px -1px hsl(220 20% 10% / 0.07),
+      0 2px 4px -2px hsl(220 20% 10% / 0.05);
+    --shadow-lg:
+      0 10px 15px -3px hsl(220 20% 10% / 0.08),
+      0 4px 6px -4px hsl(220 20% 10% / 0.05);
+    --shadow-xl:
+      0 20px 25px -5px hsl(220 20% 10% / 0.1),
+      0 8px 10px -6px hsl(220 20% 10% / 0.05);
+    --shadow-glow: 0 0 20px hsl(142 76% 36% / 0.3);
+  }
+
+  .dark {
+    --background: 220 20% 7%;
+    --foreground: 220 14% 96%;
+
+    --card: 220 20% 10%;
+    --card-foreground: 220 14% 96%;
+
+    --popover: 220 20% 10%;
+    --popover-foreground: 220 14% 96%;
+
+    --primary: 142 76% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 142 40% 15%;
+    --primary-dark: 142 76% 55%;
+
+    --secondary: 220 14% 14%;
+    --secondary-foreground: 220 14% 96%;
+
+    --muted: 220 14% 14%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 25 95% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 18%;
+    --input: 220 14% 18%;
+    --ring: 142 76% 45%;
+
+    --sidebar-background: 220 20% 8%;
+    --sidebar-foreground: 220 14% 90%;
+    --sidebar-primary: 142 76% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 14%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 220 14% 18%;
+    --sidebar-ring: 142 76% 45%;
+  }
+}
+
+@layer base {
+  * {
+    /* set default border color using CSS variable (avoid @apply with slash variants) */
+    --tw-border-opacity: 1;
+    border-color: hsl(var(--border) / var(--tw-border-opacity));
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    /* fall back to CSS variables for background and foreground to avoid utility resolution issues */
+    background: hsl(var(--background) / 1);
+    color: hsl(var(--foreground) / 1);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Premium selection color */
+  ::selection {
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-deal {
+    background: var(--gradient-deal);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-card-hover {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Product card styles */
+  .product-card {
+    border-radius: 1rem;
+    border-style: solid;
+    overflow: hidden;
+    background: hsl(var(--card) / 1);
+    border-color: hsl(var(--border) / 0.4);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .product-card:hover {
+    border-color: hsl(var(--primary) / 0.2);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+
+  /* Button variants */
+  .btn-primary {
+    background: hsl(var(--primary) / 1);
+    color: hsl(var(--primary-foreground) / 1);
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  .btn-primary:hover {
+    filter: brightness(1.08);
+  }
+
+  .btn-deal {
+    color: #ffffff;
+    font-weight: 600;
+    background: var(--gradient-deal);
+  }
+
+  .btn-outline-primary {
+    border-width: 2px;
+    border-style: solid;
+    border-color: hsl(var(--primary) / 1);
+    color: hsl(var(--primary) / 1);
+    transition: all 0.2s ease;
+  }
+  .btn-outline-primary:hover {
+    background: hsl(var(--primary) / 1);
+    color: hsl(var(--primary-foreground) / 1);
+  }
+
+  /* Badge styles */
+  .badge-discount {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    color: #fff;
+    background: var(--gradient-deal);
+  }
+
+  .badge-fresh {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    color: hsl(var(--primary) / 1);
+    background: hsl(var(--primary) / 0.1);
+  }
+
+  /* Category card */
+  .category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 1rem;
+    border-style: solid;
+    border-color: transparent;
+    cursor: pointer;
+    background: hsl(var(--secondary) / 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .category-card:hover {
+    border-color: hsl(var(--primary) / 0.2);
+    background: hsl(var(--primary) / 0.05);
+  }
+
+  /* Search bar */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0 1rem;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+    border-style: solid;
+    border-color: transparent;
+    transition: all 0.3s;
+    background: hsl(var(--secondary) / 0.6);
+  }
+
+  .search-bar:focus-within {
+    border-color: hsl(var(--primary) / 0.2);
+    background: hsl(var(--background) / 1);
+  }
+
+  /* Sticky header */
+  .header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom-style: solid;
+    border-bottom-color: hsl(var(--border) / 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Container */
+  .container-app {
+    max-width: 80rem; /* approx max-w-7xl */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-app {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container-app {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  /* Premium glass effect */
+  .glass {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-style: solid;
+    background: hsl(var(--background) / 0.8);
+    border-color: hsl(var(--border) / 0.3);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Touch-friendly tap targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+/* Safelist utilities: explicit definitions for dynamically-used classes
+   so Tailwind/JIT consumers (and server-side rendering) always have them.
+   These approximate the common Tailwind color palette where needed. */
+@layer utilities {
+  /* Backgrounds */
+  .bg-blue-500 { background-color: #3b82f6; }
+  .bg-blue-500\/10 { background-color: rgba(59,130,246,0.10); }
+  .bg-emerald-500\/10 { background-color: rgba(16,185,129,0.10); }
+  .bg-purple-500\/10 { background-color: rgba(124,58,237,0.10); }
+
+  /* Text / Fill */
+  .text-blue-600 { color: #2563eb; }
+  .text-amber-400 { color: #f59e0b; }
+  .text-emerald-600 { color: #059669; }
+  .text-purple-600 { color: #6d28d9; }
+  .text-white { color: #ffffff; }
+  .fill-amber-400 { fill: #f59e0b; }
+  .fill-white { fill: #ffffff; }
+
+  /* Gradient stops (approximate) */
+  .from-blue-500\/10 { --tw-gradient-from: rgba(59,130,246,0.10); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(59,130,246,0)); }
+  .from-emerald-500\/10 { --tw-gradient-from: rgba(16,185,129,0.10); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(16,185,129,0)); }
+  .from-orange-500 { --tw-gradient-from: #f97316; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(249,115,22,0)); }
+  .from-purple-500\/10 { --tw-gradient-from: rgba(124,58,237,0.10); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(124,58,237,0)); }
+  .to-amber-500 { --tw-gradient-to: #f59e0b; }
+  .to-blue-500\/5 { --tw-gradient-to: rgba(59,130,246,0.05); }
+  .to-emerald-500\/5 { --tw-gradient-to: rgba(16,185,129,0.05); }
+  .to-primary-dark { --tw-gradient-to: hsl(142 76% 28%); }
+  .to-purple-500\/5 { --tw-gradient-to: rgba(124,58,237,0.05); }
+  .via-white\/20 { --tw-gradient-to: rgba(255,255,255,0.20); }
+
+  /* Hover / interaction (use attribute selectors to avoid escaping issues) */
+  [class~="hover:bg-red-50"]:hover { background-color: #fef2f2; }
+  [class~="hover:text-red-500"]:hover { color: #ef4444; }
+
+  /* Transforms with bracketed values (attribute selectors avoid complex escaping) */
+  [class~="translate-x-[-100%]"] { transform: translateX(-100%); }
+  /* mimic group-hover: when a parent with class 'group' is hovered */
+  .group:hover [class~="group-hover:translate-x-[100%]"] { transform: translateX(100%); }
+}
+/*
+# Legacy app.css styles migrated here
+*/
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
