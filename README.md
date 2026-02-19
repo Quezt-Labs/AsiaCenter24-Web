@@ -1,3 +1,67 @@
+# AsiaCenter24 Web (FreshMart)
+
+This repository contains the Next.js (App Router) storefront for FreshMart — a demo e‑commerce site for Asia Center 24.
+
+Quick links
+
+- Framework: Next.js 16 (App Router)
+- Language: TypeScript / React 19
+- Styling: Tailwind CSS
+- i18n: react-i18next (client init present)
+
+Getting started (local)
+
+Prerequisites:
+
+- Node 18+ and pnpm installed
+
+Install
+
+```bash
+pnpm install
+```
+
+Run dev server
+
+```bash
+pnpm dev
+```
+
+Build (production)
+
+```bash
+pnpm build
+pnpm start
+```
+
+Project structure (high level)
+
+- app/ — Next.js App Router pages & layouts
+- src/components — UI and feature components
+- src/data — sample product/category data
+- public/ — static assets
+- next.config.ts — Next.js configuration (image hosts, etc.)
+
+Performance & SEO notes
+
+- Heavy client components (carousel, testimonials) are dynamically loaded to reduce initial JS.
+- Hero/critical images use next/image with sizes/priority for better LCP.
+- Locale-aware metadata is generated via `generateMetadata`.
+- Structured data (JSON-LD) is injected for better search visibility.
+
+Contributing
+
+- Open an issue or a PR with a clear description.
+- Follow existing code style (Tailwind + utility classes).
+
+Author
+
+- Shivam Jha — shivamjha190@gmail.com
+
+License
+
+- MIT
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
