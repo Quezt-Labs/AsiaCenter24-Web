@@ -304,7 +304,7 @@ const HeaderClient = () => {
                 className="flex items-center gap-2 p-2 text-foreground hover:text-primary rounded-xl hover:bg-secondary/60 transition-all"
               >
                 <User size={20} />
-                <span className="hidden md:block text-sm font-medium">
+                <span className="hidden md:block text-sm font-medium capitalize">
                   {t("login")}
                 </span>
               </motion.button>
@@ -365,7 +365,7 @@ const HeaderClient = () => {
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={cn(
-                        "block py-3 px-4 rounded-xl text-base font-medium transition-all active:scale-[0.98]",
+                        "block py-3 px-4 rounded-xl text-base font-medium capitalize transition-all active:scale-[0.98]",
                         pathname === link.href
                           ? "bg-primary/10 text-primary"
                           : "text-foreground hover:bg-secondary/60",
@@ -410,7 +410,7 @@ const HeaderClient = () => {
                         openAuthModal();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="flex items-center gap-3 py-3 px-4 rounded-xl text-base font-medium text-primary hover:bg-primary/5 transition-all w-full active:scale-[0.98]"
+                      className="flex items-center gap-3 py-3 px-4 rounded-xl text-base font-medium capitalize text-primary hover:bg-primary/5 transition-all w-full active:scale-[0.98]"
                     >
                       <User size={18} />
                       {t("login")}
