@@ -51,7 +51,6 @@ Performance & SEO notes
 
 Contributing
 
-- Open an issue or a PR with a clear description.
 - Follow existing code style (Tailwind + utility classes).
 
 Author
