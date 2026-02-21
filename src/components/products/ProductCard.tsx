@@ -18,6 +18,7 @@ import { Product } from "@/types/product";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { cn } from "@/lib/utils";
+import { slugify } from "@/lib/utils";
 
 interface ProductCardProps {
   product: Product;
@@ -67,7 +68,7 @@ const ProductCard = ({
       <div className="bg-card rounded-2xl border border-border/40 overflow-hidden transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
         {/* Image */}
         <Link
-          href={`/product/${product.id}`}
+          href={`/products/${product.id}-${slugify(product.name)}`}
           className="relative block overflow-hidden"
         >
           <div
@@ -168,7 +169,7 @@ const ProductCard = ({
             </p>
           )}
 
-          <Link href={`/product/${product.id}`}>
+          <Link href={`/products/${product.id}-${slugify(product.name)}`}>
             <h3
               className={cn(
                 "font-medium text-foreground hover:text-primary transition-colors",

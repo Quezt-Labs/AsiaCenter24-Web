@@ -158,7 +158,7 @@ const HeaderClient = () => {
               <span className="text-lg sm:text-xl">🛒</span>
             </motion.div>
             <span className="text-lg sm:text-xl font-bold text-foreground hidden sm:block">
-              Fresh<span className="text-primary">Mart</span>
+              Asia<span className="text-[#bcbe4b]">Center24</span>
             </span>
           </Link>
 

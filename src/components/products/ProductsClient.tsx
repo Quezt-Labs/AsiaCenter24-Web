@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -82,8 +82,10 @@ export default function ProductsClient({
     if (categoryParam) {
       result = result.filter((p) => p.categorySlug === categoryParam);
     }
-    if (filterParam === "bestseller") result = result.filter((p) => p.isBestSeller);
-    else if (filterParam === "new") result = result.filter((p) => p.isNewArrival);
+    if (filterParam === "bestseller")
+      result = result.filter((p) => p.isBestSeller);
+    else if (filterParam === "new")
+      result = result.filter((p) => p.isNewArrival);
 
     switch (sortParam) {
       case "price_low_high":
@@ -93,7 +95,9 @@ export default function ProductsClient({
         result.sort((a, b) => b.price - a.price);
         break;
       case "newest":
-        result.sort((a, b) => (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0));
+        result.sort(
+          (a, b) => (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0),
+        );
         break;
       case "rating":
         result.sort((a, b) => b.rating - a.rating);
@@ -135,7 +139,9 @@ export default function ProductsClient({
                   : currentCategory.name
                 : t("products")}
             </h1>
-            <p className="text-muted-foreground mt-1">{filteredProducts.length} products</p>
+            <p className="text-muted-foreground mt-1">
+              {filteredProducts.length} products
+            </p>
           </div>
 
           {/* Desktop Sort */}
@@ -147,7 +153,10 @@ export default function ProductsClient({
               {t("sortBy")}: {currentSort && t(currentSort.labelKey)}
               <ChevronDown
                 size={16}
-                className={cn("transition-transform", isSortOpen && "rotate-180")}
+                className={cn(
+                  "transition-transform",
+                  isSortOpen && "rotate-180",
+                )}
               />
             </button>
 
@@ -202,8 +211,13 @@ export default function ProductsClient({
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             {categoryParam && currentCategory && (
               <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm">
-                {i18n.language === "hi" ? currentCategory.nameHi : currentCategory.name}
-                <button onClick={() => handleCategoryChange(null)} className="ml-1">
+                {i18n.language === "hi"
+                  ? currentCategory.nameHi
+                  : currentCategory.name}
+                <button
+                  onClick={() => handleCategoryChange(null)}
+                  className="ml-1"
+                >
                   <X size={14} />
                 </button>
               </span>
@@ -231,13 +245,17 @@ export default function ProductsClient({
             <div className="sticky top-24 space-y-6">
               {/* Categories */}
               <div className="bg-card rounded-xl p-4 border border-border/50">
-                <h3 className="font-semibold text-foreground mb-3">{t("categories")}</h3>
+                <h3 className="font-semibold text-foreground mb-3">
+                  {t("categories")}
+                </h3>
                 <div className="space-y-1">
                   <button
                     onClick={() => handleCategoryChange(null)}
                     className={cn(
                       "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
-                      !categoryParam ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-secondary",
+                      !categoryParam
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-foreground hover:bg-secondary",
                     )}
                   >
                     All Products
@@ -248,7 +266,9 @@ export default function ProductsClient({
                       onClick={() => handleCategoryChange(cat.slug)}
                       className={cn(
                         "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2",
-                        categoryParam === cat.slug ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-secondary",
+                        categoryParam === cat.slug
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-foreground hover:bg-secondary",
                       )}
                     >
                       <span>{cat.icon}</span>
@@ -264,9 +284,16 @@ export default function ProductsClient({
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-lg text-muted-foreground mb-2">{t("noResults")}</p>
-                <p className="text-sm text-muted-foreground">{t("tryDifferent")}</p>
-                <button onClick={clearFilters} className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium">
+                <p className="text-lg text-muted-foreground mb-2">
+                  {t("noResults")}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t("tryDifferent")}
+                </p>
+                <button
+                  onClick={clearFilters}
+                  className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium"
+                >
                   {t("clearAll")}
                 </button>
               </div>
@@ -309,13 +336,17 @@ export default function ProductsClient({
               <div className="p-4 space-y-6">
                 {/* Categories */}
                 <div>
-                  <h3 className="font-semibold text-foreground mb-3">{t("categories")}</h3>
+                  <h3 className="font-semibold text-foreground mb-3">
+                    {t("categories")}
+                  </h3>
                   <div className="space-y-1">
                     <button
                       onClick={() => handleCategoryChange(null)}
                       className={cn(
                         "w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors",
-                        !categoryParam ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-secondary",
+                        !categoryParam
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-foreground hover:bg-secondary",
                       )}
                     >
                       All Products
@@ -326,7 +357,9 @@ export default function ProductsClient({
                         onClick={() => handleCategoryChange(cat.slug)}
                         className={cn(
                           "w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center gap-2",
-                          categoryParam === cat.slug ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-secondary",
+                          categoryParam === cat.slug
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-foreground hover:bg-secondary",
                         )}
                       >
                         <span>{cat.icon}</span>
@@ -373,7 +406,9 @@ export default function ProductsClient({
                     onClick={() => handleSortChange(option.value)}
                     className={cn(
                       "w-full px-4 py-3.5 text-left text-sm rounded-lg transition-colors",
-                      sortParam === option.value ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-secondary",
+                      sortParam === option.value
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-foreground hover:bg-secondary",
                     )}
                   >
                     {t(option.labelKey)}
@@ -387,4 +422,3 @@ export default function ProductsClient({
     </>
   );
 }
-
