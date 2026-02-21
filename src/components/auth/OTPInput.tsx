@@ -11,19 +11,25 @@ interface OTPInputProps {
 }
 
 const OTPInput = ({
-  length = 6,
+  length = 4,
   value,
   onChange,
   onComplete,
   disabled = false,
 }: OTPInputProps) => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const onCompleteRef = useRef(onComplete);
+
+  // Keep ref updated without triggering effect
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  });
 
   useEffect(() => {
-    if (value.length === length && onComplete) {
-      onComplete(value);
+    if (value.length === length && onCompleteRef.current) {
+      onCompleteRef.current(value);
     }
-  }, [value, length, onComplete]);
+  }, [value, length]);
 
   const handleChange = (index: number, inputValue: string) => {
     const digit = inputValue.replace(/\D/g, "").slice(-1);

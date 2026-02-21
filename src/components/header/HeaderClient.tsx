@@ -17,6 +17,7 @@ import { Search, ShoppingCart, Heart, User, Menu, X } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useLogout } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import LanguageSwitcher from "../layout/LanguageSwitcher";
 
@@ -32,7 +33,8 @@ const HeaderClient = () => {
   // Subscribe to primitive values to avoid unnecessary re-renders
   const cartItemCount = useCartStore((state) => state.items.length);
   const wishlistItemCount = useWishlistStore((state) => state.items.length);
-  const { isAuthenticated, user, logout, openAuthModal } = useAuthStore();
+  const { isAuthenticated, user, openAuthModal } = useAuthStore();
+  const logoutMutation = useLogout();
 
   useEffect(() => {
     // Use passive listener and rAF to avoid scroll jank
@@ -289,10 +291,11 @@ const HeaderClient = () => {
                     </Link>
                     <div className="border-t border-border/50 my-1" />
                     <button
-                      onClick={logout}
-                      className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-destructive/5 transition-colors"
+                      onClick={() => logoutMutation.mutate()}
+                      disabled={logoutMutation.isPending}
+                      className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-destructive/5 transition-colors disabled:opacity-50"
                     >
-                      {t("logout")}
+                      {logoutMutation.isPending ? "..." : t("logout")}
                     </button>
                   </div>
                 </div>
@@ -396,12 +399,13 @@ const HeaderClient = () => {
                       </Link>
                       <button
                         onClick={() => {
-                          logout();
+                          logoutMutation.mutate();
                           setIsMobileMenuOpen(false);
                         }}
-                        className="flex items-center gap-3 py-3 px-4 rounded-xl text-base font-medium text-destructive hover:bg-destructive/5 transition-all w-full active:scale-[0.98]"
+                        disabled={logoutMutation.isPending}
+                        className="flex items-center gap-3 py-3 px-4 rounded-xl text-base font-medium text-destructive hover:bg-destructive/5 transition-all w-full active:scale-[0.98] disabled:opacity-50"
                       >
-                        {t("logout")}
+                        {logoutMutation.isPending ? "..." : t("logout")}
                       </button>
                     </>
                   ) : (

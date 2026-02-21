@@ -13,10 +13,10 @@ import {
   Shield,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { useRequestOTP, useVerifyOTP } from "@/hooks/useAuth";
 import OTPInput from "./OTPInput";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 
 type AuthStep = "phone" | "otp" | "success";
 
@@ -98,24 +98,25 @@ const floatingDots = [
 
 const AuthModal = () => {
   const { t } = useTranslation();
-  const router = useRouter();
-  const { toast } = useToast();
+  const requestOTP = useRequestOTP();
+  const verifyOTP = useVerifyOTP();
 
-  const {
-    isAuthModalOpen,
-    closeAuthModal,
-    setUser,
-    intendedRoute,
-    clearIntendedRoute,
-  } = useAuthStore();
+  // Use individual selectors to avoid unnecessary re-renders
+  const isAuthModalOpen = useAuthStore((s) => s.isAuthModalOpen);
+  const closeAuthModal = useAuthStore((s) => s.closeAuthModal);
+  const intendedRoute = useAuthStore((s) => s.intendedRoute);
+  const clearIntendedRoute = useAuthStore((s) => s.clearIntendedRoute);
 
   const [step, setStep] = useState<AuthStep>("phone");
   const [direction, setDirection] = useState(1);
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [countryCode, setCountryCode] = useState<"IN" | "DE">("IN");
   const [countdown, setCountdown] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  const isLoading = requestOTP.isPending || verifyOTP.isPending;
+  const dialPrefix = countryCode === "IN" ? "+91" : "+49";
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -130,6 +131,7 @@ const AuthModal = () => {
       setDirection(1);
       setPhone("");
       setOtp("");
+      setCountryCode("IN");
       setCountdown(0);
     }
   }, [isAuthModalOpen]);
@@ -160,63 +162,85 @@ const AuthModal = () => {
     };
   }, [isAuthModalOpen]);
 
-  const validatePhone = (value: string) => /^[6-9]\d{9}$/.test(value);
+  const validatePhone = (value: string) =>
+    countryCode === "IN"
+      ? /^[6-9]\d{9}$/.test(value)
+      : /^\d{10,15}$/.test(value); // DE: 10–15 digits
 
   const handleSendOTP = async () => {
     if (!validatePhone(phone)) {
-      toast({
-        title: "Invalid Phone Number",
-        description: "Please enter a valid 10-digit mobile number",
-        variant: "destructive",
+      toast.error("Invalid Phone Number", {
+        description:
+          countryCode === "IN"
+            ? "Please enter a valid 10-digit Indian mobile number"
+            : "Please enter a valid German mobile number (10–15 digits)",
       });
       return;
     }
-    setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsLoading(false);
-    setDirection(1);
-    setStep("otp");
-    setCountdown(30);
-    toast({
-      title: "OTP Sent!",
-      description: `A 6-digit OTP has been sent to +91 ${phone}`,
-    });
+    requestOTP.mutate(
+      { phone, countryCode },
+      {
+        onSuccess: () => {
+          setDirection(1);
+          setStep("otp");
+          setCountdown(30);
+          toast.success("OTP Sent!", {
+            description: `A 6-digit OTP has been sent to ${dialPrefix} ${phone}`,
+          });
+        },
+        onError: (err: Error) => {
+          toast.error("Failed to send OTP", {
+            description: err.message || "Please try again later",
+          });
+        },
+      },
+    );
   };
 
   const handleVerifyOTP = async (otpValue: string) => {
-    if (otpValue.length !== 6) return;
-    setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    const mockUser = {
-      id: `user_${Date.now()}`,
-      phone,
-      name: undefined,
-      isVerified: true,
-    };
-    setUser(mockUser);
-    setIsLoading(false);
-    setDirection(1);
-    setStep("success");
-    setTimeout(() => {
-      closeAuthModal();
-      if (intendedRoute) {
-        router.push(intendedRoute);
-        clearIntendedRoute();
-      }
-    }, 2000);
+    if (otpValue.length !== 4) return;
+    verifyOTP.mutate(
+      { phone, countryCode, otp: otpValue, deviceId: crypto.randomUUID() },
+      {
+        onSuccess: () => {
+          setDirection(1);
+          setStep("success");
+          setTimeout(() => {
+            closeAuthModal();
+            if (intendedRoute) {
+              clearIntendedRoute();
+              window.location.href = intendedRoute;
+            }
+          }, 2000);
+        },
+        onError: (err: Error) => {
+          toast.error("Verification failed", {
+            description: err.message || "Invalid OTP. Please try again.",
+          });
+        },
+      },
+    );
   };
 
   const handleResendOTP = async () => {
     if (countdown > 0) return;
-    setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setIsLoading(false);
-    setCountdown(30);
-    setOtp("");
-    toast({
-      title: "OTP Resent!",
-      description: `A new OTP has been sent to +91 ${phone}`,
-    });
+    requestOTP.mutate(
+      { phone, countryCode },
+      {
+        onSuccess: () => {
+          setCountdown(30);
+          setOtp("");
+          toast.success("OTP Resent!", {
+            description: `A new OTP has been sent to ${dialPrefix} ${phone}`,
+          });
+        },
+        onError: (err: Error) => {
+          toast.error("Failed to resend OTP", {
+            description: err.message || "Please try again later",
+          });
+        },
+      },
+    );
   };
 
   if (!isAuthModalOpen) return null;
@@ -349,7 +373,7 @@ const AuthModal = () => {
                   className="text-sm text-muted-foreground mt-2"
                 >
                   {step === "phone" && t("enterPhoneDesc")}
-                  {step === "otp" && `${t("otpSentTo")} +91 ${phone}`}
+                  {step === "otp" && `${t("otpSentTo")} ${dialPrefix} ${phone}`}
                   {step === "success" && t("loginSuccessDesc")}
                 </motion.p>
               </div>
@@ -371,23 +395,35 @@ const AuthModal = () => {
                         {t("mobileNumber")}
                       </label>
                       <div className="flex rounded-xl overflow-hidden border-2 border-border focus-within:border-primary transition-colors">
-                        <div className="flex items-center px-4 bg-secondary/60 border-r border-border">
-                          <span className="text-sm font-semibold text-muted-foreground">
-                            🇮🇳 +91
-                          </span>
-                        </div>
+                        <select
+                          value={countryCode}
+                          onChange={(e) => {
+                            setCountryCode(e.target.value as "IN" | "DE");
+                            setPhone("");
+                          }}
+                          className="px-3 py-4 bg-secondary/60 border-r border-border text-sm font-semibold text-muted-foreground focus:outline-none cursor-pointer"
+                        >
+                          <option value="IN">🇮🇳 +91</option>
+                          <option value="DE">🇩🇪 +49</option>
+                        </select>
                         <input
                           type="tel"
                           inputMode="numeric"
                           pattern="[0-9]*"
-                          maxLength={10}
+                          maxLength={countryCode === "IN" ? 10 : 15}
                           value={phone}
                           onChange={(e) =>
                             setPhone(
-                              e.target.value.replace(/\D/g, "").slice(0, 10),
+                              e.target.value
+                                .replace(/\D/g, "")
+                                .slice(0, countryCode === "IN" ? 10 : 15),
                             )
                           }
-                          placeholder="Enter mobile number"
+                          placeholder={
+                            countryCode === "IN"
+                              ? "Enter 10-digit mobile"
+                              : "Enter mobile number"
+                          }
                           className={cn(
                             "flex-1 px-4 py-4 bg-background text-foreground",
                             "focus:outline-none text-lg tracking-widest font-medium",
@@ -399,7 +435,9 @@ const AuthModal = () => {
                       {/* Phone length indicator */}
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex gap-0.5">
-                          {Array.from({ length: 10 }).map((_, i) => (
+                          {Array.from({
+                            length: countryCode === "IN" ? 10 : 15,
+                          }).map((_, i) => (
                             <motion.div
                               key={i}
                               className={cn(
@@ -412,7 +450,7 @@ const AuthModal = () => {
                           ))}
                         </div>
                         <span className="text-xs text-muted-foreground">
-                          {phone.length}/10
+                          {phone.length}/{countryCode === "IN" ? 10 : 15}
                         </span>
                       </div>
                     </div>
@@ -421,7 +459,7 @@ const AuthModal = () => {
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleSendOTP}
-                      disabled={phone.length !== 10 || isLoading}
+                      disabled={!validatePhone(phone) || isLoading}
                       className={cn(
                         "w-full py-4 rounded-xl font-semibold text-base",
                         "flex items-center justify-center gap-2.5",
@@ -458,7 +496,7 @@ const AuthModal = () => {
                     className="space-y-6"
                   >
                     <OTPInput
-                      length={6}
+                      length={4}
                       value={otp}
                       onChange={setOtp}
                       onComplete={handleVerifyOTP}
@@ -469,7 +507,7 @@ const AuthModal = () => {
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleVerifyOTP(otp)}
-                      disabled={otp.length !== 6 || isLoading}
+                      disabled={otp.length !== 4 || isLoading}
                       className={cn(
                         "w-full py-4 rounded-xl font-semibold text-base",
                         "flex items-center justify-center gap-2.5",

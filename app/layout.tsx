@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "@/i18n";
 import "./globals.css";
-import AuthModal from "@/components/auth/AuthModal";
 import Layout from "@/components/layout/Layout";
 import InitReactI18nextClient from "@/i18n/InitReactI18nextClient";
+import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
+import AuthModalClient from "@/components/auth/AuthModalClient";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,8 +34,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <InitReactI18nextClient />
-        <Layout>{children}</Layout>
-        <AuthModal />
+        <ReactQueryProvider>
+          <Layout>{children}</Layout>
+          <AuthModalClient />
+          <Toaster richColors position="top-center" />
+        </ReactQueryProvider>
       </body>
     </html>
   );
