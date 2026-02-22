@@ -1,7 +1,7 @@
  "use client";
 
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Plus, Check, X, ChevronDown, Home } from "lucide-react";
 import { useAddressStore } from "@/store/useAddressStore";
@@ -18,7 +18,7 @@ const AddressSection = ({
   selectedAddressId,
   onSelectAddress,
 }: AddressSectionProps) => {
-  const { t } = useTranslation();
+  const t = useTranslations();
   const { user } = useAuthStore();
   const { addresses, addAddress } = useAddressStore();
 

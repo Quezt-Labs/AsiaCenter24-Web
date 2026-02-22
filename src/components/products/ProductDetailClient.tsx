@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslation } from "react-i18next";
+import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import {
   ChevronRight,
@@ -33,7 +33,8 @@ import { cn } from "@/lib/utils";
 
 export default function ProductDetailClient({ product }: { product: Product }) {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const t = useTranslations();
+  const locale = useLocale();
 
   const [selectedWeight, setSelectedWeight] = useState(
     product?.weightOptions?.[0]?.weight ?? "",
@@ -55,9 +56,8 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     if (product) addRecentlyViewed(product);
   }, [product, addRecentlyViewed]);
 
-  const name = i18n.language === "hi" ? product.nameHi : product.name;
-  const description =
-    i18n.language === "hi" ? product.descriptionHi : product.description;
+  const name = locale === "hi" ? product.nameHi : product.name;
+  const description = locale === "hi" ? product.descriptionHi : product.description;
   const isWishlisted = isInWishlist(product.id);
 
   const selectedWeightOption = product.weightOptions.find(

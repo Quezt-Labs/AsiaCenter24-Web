@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useTranslation } from "react-i18next";
+import { useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import { Category } from "@/types/product";
 
@@ -12,8 +12,8 @@ interface CategoryCardProps {
 }
 
 const CategoryCard = ({ category, index = 0 }: CategoryCardProps) => {
-  const { i18n } = useTranslation();
-  const name = i18n.language === "hi" ? category.nameHi : category.name;
+  const locale = useLocale();
+  const name = locale === "hi" ? category.nameHi : category.name;
 
   return (
     <motion.div

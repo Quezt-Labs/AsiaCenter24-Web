@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import i18n from "@/i18n";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   Facebook,
@@ -15,7 +15,7 @@ import {
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const Footer = () => {
-  const t = (k: string) => i18n.t(k);
+  const t = useTranslations();
   const currentYear = new Date().getFullYear();
   const { ref, isInView } = useScrollReveal(0.1);
 

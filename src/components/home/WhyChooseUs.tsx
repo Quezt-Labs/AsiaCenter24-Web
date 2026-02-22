@@ -1,6 +1,6 @@
  "use client";
 
-import i18n from "@/i18n";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Truck, ShieldCheck, Clock, BadgePercent } from "lucide-react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
@@ -59,7 +59,7 @@ const itemVariants = {
 };
 
 const WhyChooseUs = () => {
-  const t = (k: string) => i18n.t(k);
+  const t = useTranslations();
   const { ref, isInView } = useScrollReveal(0.2);
 
   return (

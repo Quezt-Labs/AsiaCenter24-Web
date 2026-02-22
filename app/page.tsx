@@ -1,6 +1,5 @@
 export const dynamic = "force-static";
 
-import i18n from "@/i18n";
 import HeroCarouselClient from "@/components/home/HeroCarouselClient";
 import TestimonialsClient from "@/components/home/TestimonialsClient";
 import { bannerSlides } from "@/data/products";
@@ -56,12 +55,8 @@ export async function generateMetadata({
 }
 
 export default function HomePage() {
-  const t = (key: string) => i18n.t(key);
-
-  const bestSellers =
-    products?.filter((p: any) => p.isBestSeller).slice(0, 4) ?? [];
-  const newArrivals =
-    products?.filter((p: any) => p.isNewArrival).slice(0, 4) ?? [];
+  const bestSellers = products?.filter((p: any) => p.isBestSeller).slice(0, 4) ?? [];
+  const newArrivals = products?.filter((p: any) => p.isNewArrival).slice(0, 4) ?? [];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -80,9 +75,9 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <HeroCarouselClient />
-      <CategoryGrid categories={categories} t={t} />
-      <BestSellers bestSellers={bestSellers} t={t} />
-      <NewArrivals newArrivals={newArrivals} t={t} />
+      <CategoryGrid categories={categories} />
+      <BestSellers bestSellers={bestSellers} />
+      <NewArrivals newArrivals={newArrivals} />
       <OfferBanner />
       <WhyChooseUs />
       <TestimonialsClient />

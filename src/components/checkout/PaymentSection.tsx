@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { CreditCard, Wallet, Banknote, Check, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -39,7 +39,7 @@ const PaymentSection = ({
   selectedPayment,
   onSelectPayment,
 }: PaymentSectionProps) => {
-  const { t } = useTranslation();
+  const t = useTranslations();
 
   return (
     <motion.div

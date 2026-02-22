@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -97,7 +97,7 @@ const floatingDots = [
 ];
 
 const AuthModal = () => {
-  const { t } = useTranslation();
+  const t = useTranslations();
   const requestOTP = useRequestOTP();
   const verifyOTP = useVerifyOTP();
 

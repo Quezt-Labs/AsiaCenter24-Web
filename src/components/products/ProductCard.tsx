@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import i18n from "@/i18n";
+import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import {
@@ -31,7 +31,8 @@ const ProductCard = ({
   compact = false,
   index = 0,
 }: ProductCardProps) => {
-  const t = (k: string) => i18n.t(k);
+  const t = useTranslations();
+  const locale = useLocale();
   const [isAdded, setIsAdded] = useState(false);
 
   const addItem = useCartStore((state) => state.addItem);
@@ -42,7 +43,7 @@ const ProductCard = ({
   const isWishlisted = isInWishlist(product.id);
   const cartItem = cartItems.find((item) => item.product.id === product.id);
   const currentQuantity = cartItem?.quantity || 0;
-  const name = i18n.language === "hi" ? product.nameHi : product.name;
+  const name = locale === "hi" ? product.nameHi : product.name;
 
   const handleAddToCart = () => {
     addItem(product, 1);

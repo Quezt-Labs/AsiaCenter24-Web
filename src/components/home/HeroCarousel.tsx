@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,8 @@ import { bannerSlides } from "@/data/products";
 import Image from "next/image";
 
 const HeroCarousel = () => {
-  const { t, i18n } = useTranslation();
+  const t = useTranslations();
+  const locale = useLocale();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -67,7 +68,7 @@ const HeroCarousel = () => {
               {/* Background Image */}
               <Image
                 src={slide.image}
-                alt={i18n.language === "hi" ? slide.titleHi : slide.title}
+                alt={locale === "hi" ? slide.titleHi : slide.title}
                 fill
                 className="absolute inset-0 w-full h-full object-cover"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1400px"
@@ -93,12 +94,10 @@ const HeroCarousel = () => {
                     className="max-w-lg"
                   >
                     <h2 className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-primary-foreground mb-2 sm:mb-4 leading-tight">
-                      {i18n.language === "hi" ? slide.titleHi : slide.title}
+                      {locale === "hi" ? slide.titleHi : slide.title}
                     </h2>
                     <p className="text-sm sm:text-lg text-primary-foreground/90 mb-4 sm:mb-6">
-                      {i18n.language === "hi"
-                        ? slide.subtitleHi
-                        : slide.subtitle}
+                      {locale === "hi" ? slide.subtitleHi : slide.subtitle}
                     </p>
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -109,7 +108,7 @@ const HeroCarousel = () => {
                         href="/products"
                         className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-background text-foreground font-semibold hover:bg-background/90 transition-all shadow-xl hover:shadow-2xl group"
                       >
-                        {i18n.language === "hi" ? slide.ctaHi : slide.cta}
+                        {locale === "hi" ? slide.ctaHi : slide.cta}
                         <ChevronRight
                           size={18}
                           className="group-hover:translate-x-0.5 transition-transform"

@@ -11,7 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingCart, Heart, User, Menu, X } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import LanguageSwitcher from "../layout/LanguageSwitcher";
 
 const HeaderClient = () => {
-  const { t } = useTranslation();
+  const t = useTranslations();
   const pathname = usePathname() ?? "/";
   const router = useRouter();
   const mobileNavId = useId();

@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Clock, Check, CalendarDays } from "lucide-react";
 import { deliverySlots } from "@/data/products";
@@ -13,7 +13,7 @@ const DeliverySlotSection = ({
   selectedSlot,
   onSelectSlot,
 }: DeliverySlotSectionProps) => {
-  const { t } = useTranslation();
+  const t = useTranslations();
 
   const groupedSlots = deliverySlots.reduce<
     Record<string, typeof deliverySlots>

@@ -1,7 +1,7 @@
  "use client";
 
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "next-intl";
 import { Tag, X, Loader2 } from "lucide-react";
 import { validateCoupon } from "@/data/coupons";
 import { Coupon } from "@/types/product";
@@ -22,7 +22,7 @@ const CouponInput = ({
   onApply,
   onRemove,
 }: CouponInputProps) => {
-  const { t } = useTranslation();
+  const t = useTranslations();
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

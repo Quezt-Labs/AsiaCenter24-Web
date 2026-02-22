@@ -1,9 +1,9 @@
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "next-intl";
 import { useRecentlyViewedStore } from "@/store/useRecentlyViewedStore";
 import ProductCard from "./ProductCard";
 
 const RecentlyViewed = () => {
-  const { t } = useTranslation();
+  const t = useTranslations();
   const { products } = useRecentlyViewedStore();
 
   if (products.length === 0) return null;

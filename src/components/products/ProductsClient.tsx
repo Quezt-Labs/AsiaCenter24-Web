@@ -14,7 +14,7 @@ import {
 import { products, categories } from "@/data/products";
 import ProductCard from "@/components/products/ProductCard";
 import { cn } from "@/lib/utils";
-import i18n from "@/i18n";
+import { useTranslations, useLocale } from "next-intl";
 
 const sortOptions = [
   { value: "popularity", labelKey: "popularity" },
@@ -29,7 +29,8 @@ export default function ProductsClient({
 }: {
   initialSearchParams?: Record<string, string | string[] | undefined>;
 }) {
-  const t = (k: string) => i18n.t(k);
+  const t = useTranslations();
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -122,10 +123,10 @@ export default function ProductsClient({
           <ChevronRight size={14} />
           <span className="text-foreground font-medium">
             {currentCategory
-              ? i18n.language === "hi"
-                ? currentCategory.nameHi
-                : currentCategory.name
-              : t("products")}
+            ? locale === "hi"
+              ? currentCategory.nameHi
+              : currentCategory.name
+            : t("products")}
           </span>
         </nav>
 
@@ -134,7 +135,7 @@ export default function ProductsClient({
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
               {currentCategory
-                ? i18n.language === "hi"
+                ? locale === "hi"
                   ? currentCategory.nameHi
                   : currentCategory.name
                 : t("products")}
@@ -211,9 +212,7 @@ export default function ProductsClient({
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             {categoryParam && currentCategory && (
               <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm">
-                {i18n.language === "hi"
-                  ? currentCategory.nameHi
-                  : currentCategory.name}
+                {locale === "hi" ? currentCategory.nameHi : currentCategory.name}
                 <button
                   onClick={() => handleCategoryChange(null)}
                   className="ml-1"
@@ -272,7 +271,7 @@ export default function ProductsClient({
                       )}
                     >
                       <span>{cat.icon}</span>
-                      {i18n.language === "hi" ? cat.nameHi : cat.name}
+                {locale === "hi" ? cat.nameHi : cat.name}
                     </button>
                   ))}
                 </div>
@@ -363,7 +362,7 @@ export default function ProductsClient({
                         )}
                       >
                         <span>{cat.icon}</span>
-                        {i18n.language === "hi" ? cat.nameHi : cat.name}
+                {locale === "hi" ? cat.nameHi : cat.name}
                       </button>
                     ))}
                   </div>

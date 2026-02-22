@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import { Loader2, ShieldCheck, Truck, Package, Gift } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
@@ -33,7 +33,8 @@ const OrderSummaryPanel = ({
   isFormValid,
   onPlaceOrder,
 }: OrderSummaryPanelProps) => {
-  const { t, i18n } = useTranslation();
+  const t = useTranslations();
+  const locale = useLocale();
   const { items } = useCartStore();
 
   const totalSavings = discount + couponDiscount;
@@ -64,10 +65,7 @@ const OrderSummaryPanel = ({
           {/* Items */}
           <div className="space-y-3 mb-4 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
             {items.map((item) => {
-              const name =
-                i18n.language === "hi"
-                  ? item.product.nameHi
-                  : item.product.name;
+              const name = locale === "hi" ? item.product.nameHi : item.product.name;
               const weightOption = item.product.weightOptions.find(
                 (w) => w.weight === item.selectedWeight,
               );
