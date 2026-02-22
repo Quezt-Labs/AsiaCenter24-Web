@@ -1,21 +1,18 @@
 "use client";
 
-import i18n from "@/i18n";
-import { initReactI18next } from "react-i18next";
+import { useEffect } from "react";
+import { initReactI18nextClient } from "@/i18n";
 
-// Run plugin attachment at module initialization on the client so it executes
-// as early as possible (before many client components render). This avoids
-// showing i18n keys like "addToCart" while the plugin is still being attached.
-try {
-  if (typeof window !== "undefined" && !(i18n as any)._reactInitialized) {
-    i18n.use(initReactI18next);
-    // mark to avoid re-initializing
-    (i18n as any)._reactInitialized = true;
-  }
-} catch (e) {
-  // ignore in dev if something goes wrong
-}
-
+// Ensure react-i18next plugin is attached during the first client render.
+// Calling the async helper inside useEffect avoids running client-only APIs at module scope
+// while still initializing early in the app lifecycle (RootLayout mounts this component).
 export default function InitReactI18nextClient() {
+  useEffect(() => {
+    // fire-and-forget - the helper is idempotent and will attach only once
+    initReactI18nextClient().catch(() => {
+      /* swallow init errors to avoid crashing the app during client init */
+    });
+  }, []);
+
   return null;
 }
