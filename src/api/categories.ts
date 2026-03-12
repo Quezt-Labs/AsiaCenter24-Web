@@ -19,16 +19,35 @@ function mapApiCategoryToCategory(apiCat: ApiCategory): Category {
 
 export interface GetCategoriesParams {
   isActive?: boolean;
+  limit?: number;
+  page?: number;
+}
+
+/** Paginated API response */
+interface PaginatedCategoriesResponse {
+  items?: ApiCategory[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
 }
 
 /**
  * Get a list of all product categories.
+ * Handles both flat array and paginated { items, total } responses.
  */
 export async function getCategories(
   params?: GetCategoriesParams,
 ): Promise<Category[]> {
-  const { data } = await api.get<ApiCategory[]>("/categories", { params });
-  const list = Array.isArray(data) ? data : [];
+  const { data } = await api.get<ApiCategory[] | PaginatedCategoriesResponse>(
+    "/categories",
+    { params },
+  );
+  const list = Array.isArray(data)
+    ? data
+    : data && "items" in data && Array.isArray(data.items)
+      ? data.items
+      : [];
   return list.map(mapApiCategoryToCategory);
 }
 

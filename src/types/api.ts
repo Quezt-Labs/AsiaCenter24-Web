@@ -27,6 +27,14 @@ export interface ApiWeightOption {
   original_price?: number;
 }
 
+export interface ApiVariant {
+  id?: string;
+  weight?: string;
+  price?: number;
+  originalPrice?: number;
+  original_price?: number;
+}
+
 export interface ApiProduct {
   id: string;
   name: string;
@@ -35,12 +43,13 @@ export interface ApiProduct {
   brand?: string;
   description?: string;
   descriptionHi?: string;
+  shortDescription?: string;
   categoryId?: string;
   category_id?: string;
   category?: { id: string; name: string; slug: string };
   categorySlug?: string;
   category_slug?: string;
-  price: number;
+  price?: number;
   originalPrice?: number;
   original_price?: number;
   discount?: number;
@@ -49,13 +58,18 @@ export interface ApiProduct {
   weight_options?: ApiWeightOption[];
   image?: string;
   images?: string[];
+  variants?: ApiVariant[];
   rating?: number;
+  averageRating?: string | number;
   reviewCount?: number;
   review_count?: number;
   inStock?: boolean;
   in_stock?: boolean;
   isBestSeller?: boolean;
   is_best_seller?: boolean;
+  isTrending?: boolean;
+  isFeatured?: boolean;
+  is_featured?: boolean;
   isNewArrival?: boolean;
   is_new_arrival?: boolean;
   nutritionalInfo?: Record<string, string>;

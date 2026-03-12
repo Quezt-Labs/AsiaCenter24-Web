@@ -111,6 +111,8 @@ export default function ProductsClient({
       result = result.filter((p) => p.isBestSeller);
     else if (filterParam === "new")
       result = result.filter((p) => p.isNewArrival);
+    else if (filterParam === "featured")
+      result = result.filter((p) => p.isFeatured || p.isBestSeller);
 
     switch (sortParam) {
       case "price_low_high":
@@ -247,7 +249,13 @@ export default function ProductsClient({
             )}
             {filterParam && (
               <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-accent/10 text-accent rounded-full text-sm capitalize">
-                {filterParam === "bestseller" ? "Best Sellers" : "New Arrivals"}
+                {filterParam === "bestseller"
+                  ? "Best Sellers"
+                  : filterParam === "new"
+                    ? "New Arrivals"
+                    : filterParam === "featured"
+                      ? "Featured"
+                      : filterParam}
                 <button onClick={clearFilters} className="ml-1">
                   <X size={14} />
                 </button>

@@ -365,6 +365,15 @@
     min-height: 44px;
     min-width: 44px;
   }
+
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 /* Safelist utilities: explicit definitions for dynamically-used classes
    so Tailwind/JIT consumers (and server-side rendering) always have them.

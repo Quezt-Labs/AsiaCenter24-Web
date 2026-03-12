@@ -19,6 +19,7 @@ export interface Product {
   inStock: boolean;
   isBestSeller: boolean;
   isNewArrival: boolean;
+  isFeatured?: boolean;
   nutritionalInfo?: NutritionalInfo;
   storageInstructions?: string;
   tags: string[];

@@ -12,18 +12,44 @@ function mapWeightOption(opt: {
   return { weight: opt.weight, price: opt.price, originalPrice: orig };
 }
 
+const PLACEHOLDER_IMAGE =
+  "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=400&fit=crop";
+
 export function mapApiProductToProduct(apiProd: ApiProduct): Product {
   const cat = apiProd.category;
   const categorySlug =
-    apiProd.categorySlug ?? apiProd.category_slug ?? cat?.slug ?? "";
+    apiProd.categorySlug ??
+    apiProd.category_slug ??
+    cat?.slug ??
+    apiProd.slug ??
+    "";
   const categoryName = cat?.name ?? "";
   const weightOpts = apiProd.weightOptions ?? apiProd.weight_options ?? [];
+  const variants = apiProd.variants ?? [];
+  const firstVariant = variants[0] as
+    | { price?: number; originalPrice?: number; original_price?: number }
+    | undefined;
   const hasWeightOpts = weightOpts.length > 0;
-  const basePrice = apiProd.price;
+  const basePrice =
+    apiProd.price ??
+    firstVariant?.price ??
+    firstVariant?.originalPrice ??
+    firstVariant?.original_price ??
+    0;
   const baseOrig =
-    apiProd.originalPrice ?? apiProd.original_price ?? apiProd.price;
+    apiProd.originalPrice ??
+    apiProd.original_price ??
+    firstVariant?.originalPrice ??
+    firstVariant?.original_price ??
+    basePrice;
   const images = apiProd.images ?? (apiProd.image ? [apiProd.image] : []);
-  const mainImage = apiProd.image ?? images[0] ?? "";
+  const mainImage =
+    apiProd.image ?? images[0] ?? PLACEHOLDER_IMAGE;
+  const rating =
+    apiProd.rating ??
+    (typeof apiProd.averageRating === "string"
+      ? parseFloat(apiProd.averageRating) || 0
+      : (apiProd.averageRating as number) ?? 0);
 
   return {
     id: apiProd.id,
@@ -31,24 +57,31 @@ export function mapApiProductToProduct(apiProd: ApiProduct): Product {
     nameHi: apiProd.nameHi ?? apiProd.name,
     brand: apiProd.brand ?? "",
     category: categoryName,
-    categorySlug,
-    description: apiProd.description ?? "",
+    categorySlug: categorySlug || apiProd.slug || "",
+    description:
+      apiProd.description ??
+      apiProd.shortDescription ??
+      "",
     descriptionHi: apiProd.descriptionHi ?? apiProd.description ?? "",
     price: basePrice,
     originalPrice: baseOrig,
     discount:
-      apiProd.discount ?? (Math.round((1 - basePrice / baseOrig) * 100) || 0),
+      apiProd.discount ??
+      (baseOrig > 0
+        ? Math.round((1 - basePrice / baseOrig) * 100) || 0
+        : 0),
     unit: apiProd.unit ?? "kg",
     weightOptions: hasWeightOpts
       ? weightOpts.map(mapWeightOption)
       : [{ weight: "1 unit", price: basePrice, originalPrice: baseOrig }],
-    image: mainImage,
-    images: images.length > 0 ? images : [mainImage],
-    rating: apiProd.rating ?? 0,
+    image: mainImage || PLACEHOLDER_IMAGE,
+    images: images.length > 0 ? images : [mainImage || PLACEHOLDER_IMAGE],
+    rating,
     reviewCount: apiProd.reviewCount ?? apiProd.review_count ?? 0,
     inStock: apiProd.inStock ?? apiProd.in_stock ?? true,
     isBestSeller: apiProd.isBestSeller ?? apiProd.is_best_seller ?? false,
     isNewArrival: apiProd.isNewArrival ?? apiProd.is_new_arrival ?? false,
+    isFeatured: apiProd.isFeatured ?? apiProd.is_featured ?? false,
     nutritionalInfo: (apiProd.nutritionalInfo ?? apiProd.nutritional_info) as
       | NutritionalInfo
       | undefined,

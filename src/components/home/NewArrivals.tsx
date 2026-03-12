@@ -4,20 +4,26 @@ import SectionHeader from "@components/home/SectionHeader";
 import ProductCard from "@components/products/ProductCard";
 import { useTranslations } from "next-intl";
 import { useTrendingProducts } from "@/hooks/useLanding";
-import { useProducts } from "@/hooks/useProducts";
 import { products as staticProducts } from "@/data/products";
 import type { Product } from "@/types/product";
 
-export default function NewArrivals({ newArrivals }: { newArrivals?: Product[] }) {
+export default function NewArrivals({
+  newArrivals,
+}: {
+  newArrivals?: Product[];
+}) {
   const t = useTranslations();
-  const { data: trendingProducts, isError: landingError } = useTrendingProducts({
-    limit: 4,
-  });
-  const { data: apiProducts } = useProducts({ isActive: true });
-  const productsList = apiProducts ?? staticProducts;
+  const { data: trendingProducts, isError: landingError } = useTrendingProducts(
+    {
+      limit: 4,
+    },
+  );
   const list =
-    newArrivals ??
-    (trendingProducts && !landingError ? trendingProducts : productsList.filter((p) => p.isNewArrival).slice(0, 4));
+    trendingProducts && trendingProducts.length > 0 && !landingError
+      ? trendingProducts
+      : newArrivals && newArrivals.length > 0
+        ? newArrivals
+        : staticProducts.filter((p) => p.isNewArrival).slice(0, 4);
 
   return (
     <section className="py-6 sm:py-8 lg:py-12">
@@ -36,4 +42,3 @@ export default function NewArrivals({ newArrivals }: { newArrivals?: Product[] }
     </section>
   );
 }
-

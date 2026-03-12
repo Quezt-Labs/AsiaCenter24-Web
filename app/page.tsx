@@ -6,6 +6,7 @@ import { bannerSlides } from "@/data/products";
 import type { Metadata } from "next";
 import PageTransition from "@components/layout/PageTransition";
 import CategoryGrid from "@/components/home/CategoryGrid";
+import FeaturedProducts from "@/components/home/FeaturedProducts";
 import WhyChooseUs from "@components/home/WhyChooseUs";
 import BestSellers from "@/components/home/BestSellers";
 import NewArrivals from "@/components/home/NewArrivals";
@@ -55,8 +56,12 @@ export async function generateMetadata({
 }
 
 export default function HomePage() {
-  const bestSellers = products?.filter((p: any) => p.isBestSeller).slice(0, 4) ?? [];
-  const newArrivals = products?.filter((p: any) => p.isNewArrival).slice(0, 4) ?? [];
+  const featuredProducts =
+    products?.filter((p: any) => p.isFeatured || p.isBestSeller).slice(0, 8) ?? [];
+  const bestSellers =
+    products?.filter((p: any) => p.isBestSeller).slice(0, 4) ?? [];
+  const newArrivals =
+    products?.filter((p: any) => p.isNewArrival).slice(0, 4) ?? [];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -76,6 +81,7 @@ export default function HomePage() {
       />
       <HeroCarouselClient />
       <CategoryGrid categories={categories} />
+      <FeaturedProducts featuredProducts={featuredProducts} />
       <BestSellers bestSellers={bestSellers} />
       <NewArrivals newArrivals={newArrivals} />
       <OfferBanner />
