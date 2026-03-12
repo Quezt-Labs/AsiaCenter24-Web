@@ -52,6 +52,7 @@ export function mapApiProductToProduct(apiProd: ApiProduct): Product {
 
   return {
     id: apiProd.id,
+    slug: apiProd.slug,
     name: apiProd.name,
     nameHi: apiProd.nameHi ?? apiProd.name,
     brand: apiProd.brand ?? "",

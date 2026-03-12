@@ -131,7 +131,9 @@ export default function ProductsClient({
     const baseProducts =
       productsFromApi !== null ? productsFromApi : staticProducts;
     let result = [...baseProducts];
-    if (categoryParam) {
+    // Only filter by category client-side when using static products.
+    // When categoryId is passed, API already returns category-filtered products.
+    if (categoryParam && productsFromApi === null) {
       result = result.filter((p) => p.categorySlug === categoryParam);
     }
     if (filterParam === "bestseller")

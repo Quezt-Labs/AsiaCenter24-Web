@@ -69,7 +69,7 @@ const ProductCard = ({
       <div className="bg-card rounded-2xl border border-border/40 overflow-hidden transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
         {/* Image */}
         <Link
-          href={`/products/${product.id}-${slugify(product.name)}`}
+          href={`/products/${product.slug ?? slugify(product.name)}`}
           className="relative block overflow-hidden"
         >
           <div
@@ -170,7 +170,7 @@ const ProductCard = ({
             </p>
           )}
 
-          <Link href={`/products/${product.id}-${slugify(product.name)}`}>
+          <Link href={`/products/${product.slug ?? slugify(product.name)}`}>
             <h3
               className={cn(
                 "font-medium text-foreground hover:text-primary transition-colors",
