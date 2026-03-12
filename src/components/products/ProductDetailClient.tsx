@@ -24,8 +24,18 @@ import {
   reviews as sampleReviews,
   products as allProducts,
 } from "@/data/products";
+import { useProductFaqs } from "@/hooks/useProductFaqs";
+import { useProducts } from "@/hooks/useProducts";
+import { useProductReviews, useCreateReview } from "@/hooks/useProductReviews";
+import { useAuthStore } from "@/store/useAuthStore";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useCartStore } from "@/store/useCartStore";
-import { useWishlistStore } from "@/store/useWishlistStore";
+import { useWishlist } from "@/hooks/useWishlist";
 import { useRecentlyViewedStore } from "@/store/useRecentlyViewedStore";
 import ProductCard from "@/components/products/ProductCard";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
@@ -40,16 +50,15 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     product?.weightOptions?.[0]?.weight ?? "",
   );
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<
-    "description" | "nutrition" | "reviews"
-  >("description");
+  type TabId = "description" | "nutrition" | "reviews" | "faqs";
+  const [activeTab, setActiveTab] = useState<TabId>("description");
   const [isAdded, setIsAdded] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
 
   const addItem = useCartStore((state) => state.addItem);
-  const { isInWishlist, toggleItem } = useWishlistStore();
+  const { isInWishlist, toggleItem } = useWishlist();
   const addRecentlyViewed = useRecentlyViewedStore((state) => state.addProduct);
 
   useEffect(() => {
@@ -67,11 +76,27 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const originalPrice =
     selectedWeightOption?.originalPrice || product.originalPrice;
 
-  const relatedProducts: Product[] = allProducts
+  const { data: apiProducts } = useProducts({ isActive: true });
+  const productsList = apiProducts ?? allProducts;
+  const relatedProducts: Product[] = productsList
     .filter(
       (p) => p.categorySlug === product.categorySlug && p.id !== product.id,
     )
     .slice(0, 4);
+
+  const { data: faqs } = useProductFaqs(product.id);
+  const hasFaqs = faqs && faqs.length > 0;
+
+  const { data: apiReviews, isError: reviewsError } = useProductReviews(
+    product.id
+  );
+  const reviews =
+    apiReviews !== undefined && !reviewsError ? apiReviews : sampleReviews;
+
+  const { isAuthenticated, openAuthModal } = useAuthStore();
+  const createReviewMutation = useCreateReview(product.id);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
 
   const handleAddToCart = () => {
     addItem(product, quantity, selectedWeight);
@@ -385,7 +410,10 @@ export default function ProductDetailClient({ product }: { product: Product }) {
       <div className="mt-8 sm:mt-12">
         <div className="border-b border-border overflow-x-auto">
           <div className="flex gap-4 sm:gap-8 min-w-max">
-            {(["description", "nutrition", "reviews"] as const).map((tab) => (
+            {(hasFaqs
+              ? (["description", "nutrition", "reviews", "faqs"] as const)
+              : (["description", "nutrition", "reviews"] as const)
+            ).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -400,6 +428,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 {tab === "nutrition" && t("nutritionalInfo")}
                 {tab === "reviews" &&
                   `${t("reviews")} (${product.reviewCount})`}
+                {tab === "faqs" && `${t("faq")} (${faqs?.length ?? 0})`}
                 {activeTab === tab && (
                   <motion.div
                     layoutId="activeTab"
@@ -482,9 +511,91 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             </div>
           )}
 
+          {activeTab === "faqs" && hasFaqs && (
+            <div className="max-w-2xl">
+              <Accordion type="single" collapsible className="w-full">
+                {faqs.map((faq) => (
+                  <AccordionItem key={faq.id} value={faq.id}>
+                    <AccordionTrigger className="text-left">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          )}
+
           {activeTab === "reviews" && (
             <div className="space-y-4 sm:space-y-6 max-w-2xl">
-              {sampleReviews.map((review) => (
+              {isAuthenticated && (
+                <div className="p-4 bg-card rounded-xl border border-border/50">
+                  <h4 className="font-semibold text-sm text-foreground mb-3">
+                    {t("writeReview")}
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewRating(star)}
+                          className="p-1"
+                        >
+                          <Star
+                            size={20}
+                            className={
+                              star <= reviewRating
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-muted"
+                            }
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      placeholder={t("writeReviewPlaceholder")}
+                      className="w-full min-h-[80px] px-3 py-2 text-sm rounded-lg border border-border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      maxLength={500}
+                    />
+                    <button
+                      onClick={() => {
+                        if (!reviewComment.trim()) return;
+                        createReviewMutation.mutate(
+                          { rating: reviewRating, comment: reviewComment.trim() },
+                          {
+                            onSuccess: () => {
+                              setReviewComment("");
+                              setReviewRating(5);
+                            },
+                          }
+                        );
+                      }}
+                      disabled={
+                        !reviewComment.trim() || createReviewMutation.isPending
+                      }
+                      className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {createReviewMutation.isPending
+                        ? t("submitting")
+                        : t("submitReview")}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {!isAuthenticated && (
+                <button
+                  onClick={() => openAuthModal()}
+                  className="text-sm text-primary font-medium hover:underline"
+                >
+                  {t("loginToReview")}
+                </button>
+              )}
+              {reviews.map((review) => (
                 <div
                   key={review.id}
                   className="p-4 bg-card rounded-xl border border-border/50"

@@ -5,9 +5,23 @@ import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Ref } from "react";
+import { useBanners } from "@/hooks/useBanners";
+
+const DEFAULT_TITLE = "Save More on Monthly Essentials";
+const DEFAULT_SUBTITLE =
+  "Stock up on your favorite groceries and save up to 30% on rice, atta, dal, and more!";
+const DEFAULT_CTA = "Explore Deals";
+const DEFAULT_LINK = "/products";
 
 const OfferBanner = () => {
   const { ref, isInView } = useScrollReveal(0.3);
+  const { data: banners } = useBanners("HOME_SECONDARY");
+  const banner = banners?.[0];
+
+  const title = banner?.title ?? DEFAULT_TITLE;
+  const subtitle = banner?.subtitle ?? DEFAULT_SUBTITLE;
+  const ctaText = banner?.ctaText ?? DEFAULT_CTA;
+  const ctaLink = banner?.ctaLink ?? DEFAULT_LINK;
 
   return (
     <section className="py-8 lg:py-12">
@@ -57,7 +71,7 @@ const OfferBanner = () => {
               transition={{ delay: 0.3 }}
               className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-accent-foreground mb-3"
             >
-              Save More on Monthly Essentials
+              {title}
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -65,8 +79,7 @@ const OfferBanner = () => {
               transition={{ delay: 0.4 }}
               className="text-accent-foreground/80 mb-6 max-w-xl mx-auto text-sm sm:text-base"
             >
-              Stock up on your favorite groceries and save up to 30% on rice,
-              atta, dal, and more!
+              {subtitle}
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -74,10 +87,10 @@ const OfferBanner = () => {
               transition={{ delay: 0.5 }}
             >
               <Link
-                href="/products"
+                href={ctaLink}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-background text-foreground font-semibold rounded-full hover:bg-background/90 transition-all shadow-xl hover:shadow-2xl group"
               >
-                Explore Deals
+                {ctaText}
                 <ArrowRight
                   size={18}
                   className="group-hover:translate-x-0.5 transition-transform"

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Product } from "@/types/product";
 import { useCartStore } from "@/store/useCartStore";
-import { useWishlistStore } from "@/store/useWishlistStore";
+import { useWishlist } from "@/hooks/useWishlist";
 import { cn } from "@/lib/utils";
 import { slugify } from "@/lib/utils";
 
@@ -38,7 +38,7 @@ const ProductCard = ({
   const addItem = useCartStore((state) => state.addItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const cartItems = useCartStore((state) => state.items);
-  const { isInWishlist, toggleItem } = useWishlistStore();
+  const { isInWishlist, toggleItem } = useWishlist();
 
   const isWishlisted = isInWishlist(product.id);
   const cartItem = cartItems.find((item) => item.product.id === product.id);

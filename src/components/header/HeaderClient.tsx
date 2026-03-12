@@ -15,7 +15,7 @@ import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingCart, Heart, User, Menu, X } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
-import { useWishlistStore } from "@/store/useWishlistStore";
+import { useWishlist } from "@/hooks/useWishlist";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useLogout } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ const HeaderClient = () => {
 
   // Subscribe to primitive values to avoid unnecessary re-renders
   const cartItemCount = useCartStore((state) => state.items.length);
-  const wishlistItemCount = useWishlistStore((state) => state.items.length);
+  const { itemCount: wishlistItemCount } = useWishlist();
   const { isAuthenticated, user, openAuthModal } = useAuthStore();
   const logoutMutation = useLogout();
 

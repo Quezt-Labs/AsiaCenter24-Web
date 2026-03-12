@@ -11,10 +11,12 @@ import {
   SlidersHorizontal,
   ChevronRight,
 } from "lucide-react";
-import { products, categories } from "@/data/products";
+import { products as staticProducts, categories as staticCategories } from "@/data/products";
 import ProductCard from "@/components/products/ProductCard";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
+import { useCategories } from "@/hooks/useCategories";
+import { useProducts } from "@/hooks/useProducts";
 
 const sortOptions = [
   { value: "popularity", labelKey: "popularity" },
@@ -53,6 +55,26 @@ export default function ProductsClient({
       ? initialSearchParams?.filter[0]
       : initialSearchParams?.filter);
 
+  const { data: apiCategories, isError: categoriesError } = useCategories({
+    isActive: true,
+  });
+  const currentCategoryFromList = (apiCategories ?? staticCategories).find(
+    (c) => c.slug === categoryParam
+  );
+  const categoryId = currentCategoryFromList?.id;
+
+  const { data: apiProducts, isError: productsError } = useProducts({
+    categoryId: categoryId || undefined,
+    isActive: true,
+  });
+
+  const categories =
+    apiCategories && apiCategories.length > 0 && !categoriesError
+      ? apiCategories
+      : staticCategories;
+  const productsFromApi =
+    apiProducts && apiProducts.length >= 0 && !productsError ? apiProducts : null;
+
   const updateParams = (fn: (params: URLSearchParams) => void) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
     fn(params);
@@ -79,7 +101,9 @@ export default function ProductsClient({
   };
 
   const filteredProducts = useMemo(() => {
-    let result = [...products];
+    const baseProducts =
+      productsFromApi !== null ? productsFromApi : staticProducts;
+    let result = [...baseProducts];
     if (categoryParam) {
       result = result.filter((p) => p.categorySlug === categoryParam);
     }
@@ -107,7 +131,7 @@ export default function ProductsClient({
         result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
     return result;
-  }, [categoryParam, sortParam, filterParam]);
+  }, [productsFromApi, categoryParam, sortParam, filterParam]);
 
   const currentCategory = categories.find((c) => c.slug === categoryParam);
   const currentSort = sortOptions.find((s) => s.value === sortParam);

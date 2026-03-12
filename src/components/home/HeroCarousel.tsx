@@ -1,38 +1,84 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { bannerSlides } from "@/data/products";
-import Image from "next/image";
+import { useBanners } from "@/hooks/useBanners";
+import type { Banner } from "@/types/banner";
+
+type SlideItem = {
+  id: string;
+  title: string;
+  titleHi?: string;
+  subtitle: string;
+  subtitleHi?: string;
+  image: string;
+  imageMobile?: string;
+  cta: string;
+  ctaHi?: string;
+  ctaLink: string;
+  bgColor: string;
+};
+
+function mapBannerToSlide(b: Banner): SlideItem {
+  return {
+    id: b.id,
+    title: b.title,
+    subtitle: b.subtitle,
+    image: b.imageDesktopUrl,
+    imageMobile: b.imageMobileUrl,
+    cta: b.ctaText,
+    ctaLink: b.ctaLink || "/products",
+    bgColor: "from-primary to-primary-dark",
+  };
+}
 
 const HeroCarousel = () => {
-  const t = useTranslations();
   const locale = useLocale();
+  const { data: apiBanners, isError } = useBanners("HOME_HERO");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1);
 
+  const slides = useMemo<SlideItem[]>(() => {
+    if (apiBanners && apiBanners.length > 0 && !isError) {
+      return apiBanners.map(mapBannerToSlide);
+    }
+    return bannerSlides.map((s) => ({
+      id: s.id,
+      title: s.title,
+      titleHi: s.titleHi,
+      subtitle: s.subtitle,
+      subtitleHi: s.subtitleHi,
+      image: s.image,
+      cta: s.cta,
+      ctaHi: s.ctaHi,
+      ctaLink: "/products",
+      bgColor: s.bgColor,
+    }));
+  }, [apiBanners, isError]);
+
   const nextSlide = useCallback(() => {
     setDirection(1);
-    setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
-  }, []);
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
 
   const prevSlide = useCallback(() => {
     setDirection(-1);
-    setCurrentSlide(
-      (prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length,
-    );
-  }, []);
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  }, [slides.length]);
 
   useEffect(() => {
+    if (slides.length === 0) return;
     const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
-  }, [nextSlide]);
+  }, [nextSlide, slides.length]);
 
-  const slide = bannerSlides[currentSlide];
+  const slide = slides[currentSlide];
+  if (!slide || slides.length === 0) return null;
 
   const slideVariants = {
     enter: (d: number) => ({
@@ -65,16 +111,21 @@ const HeroCarousel = () => {
               exit="exit"
               className="relative aspect-[16/9] sm:aspect-[21/9] lg:aspect-[3/1]"
             >
-              {/* Background Image */}
-              <Image
-                src={slide.image}
-                alt={locale === "hi" ? slide.titleHi : slide.title}
-                fill
-                className="absolute inset-0 w-full h-full object-cover"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1400px"
-                quality={75}
-                priority={currentSlide === 0}
-              />
+              {/* Background Image - desktop + mobile sources */}
+              <picture className="absolute inset-0 block w-full h-full">
+                {slide.imageMobile && (
+                  <source
+                    media="(max-width: 767px)"
+                    srcSet={slide.imageMobile}
+                  />
+                )}
+                <img
+                  src={slide.image}
+                  alt={locale === "hi" && slide.titleHi ? slide.titleHi : slide.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading={currentSlide === 0 ? "eager" : "lazy"}
+                />
+              </picture>
 
               {/* Overlay */}
               <div
@@ -94,10 +145,10 @@ const HeroCarousel = () => {
                     className="max-w-lg"
                   >
                     <h2 className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-primary-foreground mb-2 sm:mb-4 leading-tight">
-                      {locale === "hi" ? slide.titleHi : slide.title}
+                      {locale === "hi" && slide.titleHi ? slide.titleHi : slide.title}
                     </h2>
                     <p className="text-sm sm:text-lg text-primary-foreground/90 mb-4 sm:mb-6">
-                      {locale === "hi" ? slide.subtitleHi : slide.subtitle}
+                      {locale === "hi" && slide.subtitleHi ? slide.subtitleHi : slide.subtitle}
                     </p>
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -105,10 +156,10 @@ const HeroCarousel = () => {
                       transition={{ delay: 0.35, duration: 0.4 }}
                     >
                       <Link
-                        href="/products"
+                        href={slide.ctaLink}
                         className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-background text-foreground font-semibold hover:bg-background/90 transition-all shadow-xl hover:shadow-2xl group"
                       >
-                        {locale === "hi" ? slide.ctaHi : slide.cta}
+                        {locale === "hi" && slide.ctaHi ? slide.ctaHi : slide.cta}
                         <ChevronRight
                           size={18}
                           className="group-hover:translate-x-0.5 transition-transform"
@@ -143,7 +194,7 @@ const HeroCarousel = () => {
 
           {/* Dots */}
           <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-            {bannerSlides.map((_, index) => (
+            {slides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => {
