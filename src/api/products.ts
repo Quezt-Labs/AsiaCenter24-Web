@@ -43,13 +43,12 @@ export function mapApiProductToProduct(apiProd: ApiProduct): Product {
     firstVariant?.original_price ??
     basePrice;
   const images = apiProd.images ?? (apiProd.image ? [apiProd.image] : []);
-  const mainImage =
-    apiProd.image ?? images[0] ?? PLACEHOLDER_IMAGE;
+  const mainImage = apiProd.image ?? images[0] ?? PLACEHOLDER_IMAGE;
   const rating =
     apiProd.rating ??
     (typeof apiProd.averageRating === "string"
       ? parseFloat(apiProd.averageRating) || 0
-      : (apiProd.averageRating as number) ?? 0);
+      : ((apiProd.averageRating as number) ?? 0));
 
   return {
     id: apiProd.id,
@@ -58,18 +57,13 @@ export function mapApiProductToProduct(apiProd: ApiProduct): Product {
     brand: apiProd.brand ?? "",
     category: categoryName,
     categorySlug: categorySlug || apiProd.slug || "",
-    description:
-      apiProd.description ??
-      apiProd.shortDescription ??
-      "",
+    description: apiProd.description ?? apiProd.shortDescription ?? "",
     descriptionHi: apiProd.descriptionHi ?? apiProd.description ?? "",
     price: basePrice,
     originalPrice: baseOrig,
     discount:
       apiProd.discount ??
-      (baseOrig > 0
-        ? Math.round((1 - basePrice / baseOrig) * 100) || 0
-        : 0),
+      (baseOrig > 0 ? Math.round((1 - basePrice / baseOrig) * 100) || 0 : 0),
     unit: apiProd.unit ?? "kg",
     weightOptions: hasWeightOpts
       ? weightOpts.map(mapWeightOption)
@@ -95,17 +89,62 @@ export interface GetProductsParams {
   categoryId?: string;
   isActive?: boolean;
   country?: string;
+  limit?: number;
+  page?: number;
+}
+
+/** Paginated API response */
+interface PaginatedProductsResponse {
+  items?: ApiProduct[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
 }
 
 /**
  * Get a list of products with optional filtering and tax calculation.
+ * Handles both flat array and paginated { items, total } responses.
  */
 export async function getProducts(
   params?: GetProductsParams,
 ): Promise<Product[]> {
-  const { data } = await api.get<ApiProduct[]>("/products", { params });
-  const list = Array.isArray(data) ? data : [];
-  return list.map(mapApiProductToProduct);
+  const result = await getProductsPaginated(params);
+  return result.products;
+}
+
+export interface ProductsPaginatedResult {
+  products: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+/**
+ * Get products with pagination metadata.
+ */
+export async function getProductsPaginated(
+  params?: GetProductsParams,
+): Promise<ProductsPaginatedResult> {
+  const { data } = await api.get<ApiProduct[] | PaginatedProductsResponse>(
+    "/products",
+    { params: { ...params, limit: params?.limit ?? 12 } },
+  );
+  const isPaginated = data && !Array.isArray(data) && "items" in data;
+  const list = Array.isArray(data)
+    ? data
+    : isPaginated && Array.isArray((data as PaginatedProductsResponse).items)
+      ? (data as PaginatedProductsResponse).items!
+      : [];
+  const paginated = data as PaginatedProductsResponse | undefined;
+  return {
+    products: list.map(mapApiProductToProduct),
+    total: paginated?.total ?? list.length,
+    page: paginated?.page ?? 1,
+    limit: paginated?.limit ?? params?.limit ?? 12,
+    totalPages: paginated?.totalPages ?? 1,
+  };
 }
 
 /**

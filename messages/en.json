@@ -159,5 +159,9 @@
   "priceLowHigh": "Price: Low to High",
   "priceHighLow": "Price: High to Low",
   "newest": "Newest",
-  "rating": "Rating"
+  "rating": "Rating",
+  "previousPage": "Previous",
+  "nextPage": "Next",
+  "page": "Page",
+  "showMoreCategories": "Show more"
 }

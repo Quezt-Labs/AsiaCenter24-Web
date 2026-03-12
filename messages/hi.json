@@ -159,5 +159,9 @@
   "priceLowHigh": "किफायती → महंगा",
   "priceHighLow": "महंगा → किफायती",
   "newest": "नवीनतम",
-  "rating": "रेटिंग"
+  "rating": "रेटिंग",
+  "previousPage": "पिछला",
+  "nextPage": "अगला",
+  "page": "पेज",
+  "showMoreCategories": "और दिखाएं"
 }

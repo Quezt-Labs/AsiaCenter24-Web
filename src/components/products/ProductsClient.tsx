@@ -10,13 +10,17 @@ import {
   X,
   SlidersHorizontal,
   ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
-import { products as staticProducts, categories as staticCategories } from "@/data/products";
+import {
+  products as staticProducts,
+  categories as staticCategories,
+} from "@/data/products";
 import ProductCard from "@/components/products/ProductCard";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
 import { useCategories } from "@/hooks/useCategories";
-import { useProducts } from "@/hooks/useProducts";
+import { useProductsPaginated } from "@/hooks/useProductsPaginated";
 
 const sortOptions = [
   { value: "popularity", labelKey: "popularity" },
@@ -54,18 +58,29 @@ export default function ProductsClient({
     (Array.isArray(initialSearchParams?.filter)
       ? initialSearchParams?.filter[0]
       : initialSearchParams?.filter);
+  const pageParam =
+    Number(
+      searchParams?.get("page") ??
+        (Array.isArray(initialSearchParams?.page)
+          ? initialSearchParams?.page[0]
+          : initialSearchParams?.page),
+    ) || 1;
+  const currentPage = Math.max(1, pageParam);
 
   const { data: apiCategories, isError: categoriesError } = useCategories({
     isActive: true,
+    limit: 100,
   });
   const currentCategoryFromList = (apiCategories ?? staticCategories).find(
-    (c) => c.slug === categoryParam
+    (c) => c.slug === categoryParam,
   );
   const categoryId = currentCategoryFromList?.id;
 
-  const { data: apiProducts, isError: productsError } = useProducts({
+  const { data: paginatedData, isError: productsError } = useProductsPaginated({
     categoryId: categoryId || undefined,
     isActive: true,
+    limit: 12,
+    page: currentPage,
   });
 
   const categories =
@@ -73,7 +88,11 @@ export default function ProductsClient({
       ? apiCategories
       : staticCategories;
   const productsFromApi =
-    apiProducts && apiProducts.length >= 0 && !productsError ? apiProducts : null;
+    paginatedData && !productsError ? paginatedData.products : null;
+  const { total: totalProducts, totalPages } = paginatedData ?? {
+    total: 0,
+    totalPages: 1,
+  };
 
   const updateParams = (fn: (params: URLSearchParams) => void) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
@@ -92,8 +111,16 @@ export default function ProductsClient({
       if (slug) p.set("category", slug);
       else p.delete("category");
       p.delete("filter");
+      p.delete("page");
     });
     setIsFilterOpen(false);
+  };
+
+  const handlePageChange = (page: number) => {
+    updateParams((p) => {
+      if (page <= 1) p.delete("page");
+      else p.set("page", String(page));
+    });
   };
 
   const clearFilters = () => {
@@ -149,10 +176,10 @@ export default function ProductsClient({
           <ChevronRight size={14} />
           <span className="text-foreground font-medium">
             {currentCategory
-            ? locale === "hi"
-              ? currentCategory.nameHi
-              : currentCategory.name
-            : t("products")}
+              ? locale === "hi"
+                ? currentCategory.nameHi
+                : currentCategory.name
+              : t("products")}
           </span>
         </nav>
 
@@ -167,7 +194,11 @@ export default function ProductsClient({
                 : t("products")}
             </h1>
             <p className="text-muted-foreground mt-1">
-              {filteredProducts.length} products
+              {filterParam
+                ? `${filteredProducts.length} products`
+                : paginatedData
+                  ? `${totalProducts} products`
+                  : `${filteredProducts.length} products`}
             </p>
           </div>
 
@@ -238,7 +269,9 @@ export default function ProductsClient({
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             {categoryParam && currentCategory && (
               <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm">
-                {locale === "hi" ? currentCategory.nameHi : currentCategory.name}
+                {locale === "hi"
+                  ? currentCategory.nameHi
+                  : currentCategory.name}
                 <button
                   onClick={() => handleCategoryChange(null)}
                   className="ml-1"
@@ -274,12 +307,12 @@ export default function ProductsClient({
           {/* Desktop Sidebar Filters */}
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-24 space-y-6">
-              {/* Categories */}
+              {/* Categories - scrollable when many */}
               <div className="bg-card rounded-xl p-4 border border-border/50">
                 <h3 className="font-semibold text-foreground mb-3">
                   {t("categories")}
                 </h3>
-                <div className="space-y-1">
+                <div className="max-h-[280px] overflow-y-auto pr-1 space-y-1 scrollbar-hide">
                   <button
                     onClick={() => handleCategoryChange(null)}
                     className={cn(
@@ -303,7 +336,7 @@ export default function ProductsClient({
                       )}
                     >
                       <span>{cat.icon}</span>
-                {locale === "hi" ? cat.nameHi : cat.name}
+                      {locale === "hi" ? cat.nameHi : cat.name}
                     </button>
                   ))}
                 </div>
@@ -329,11 +362,36 @@ export default function ProductsClient({
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4">
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+                {!filterParam && totalPages > 1 && (
+                  <div className="mt-8 flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage <= 1}
+                      className="flex items-center gap-1 px-4 py-2 rounded-lg bg-secondary text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80"
+                    >
+                      <ChevronLeft size={16} />
+                      {t("previousPage")}
+                    </button>
+                    <span className="px-4 py-2 text-sm text-muted-foreground">
+                      {t("page")} {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage >= totalPages}
+                      className="flex items-center gap-1 px-4 py-2 rounded-lg bg-secondary text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80"
+                    >
+                      {t("nextPage")}
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -365,12 +423,12 @@ export default function ProductsClient({
               </div>
 
               <div className="p-4 space-y-6">
-                {/* Categories */}
+                {/* Categories - scrollable when many */}
                 <div>
                   <h3 className="font-semibold text-foreground mb-3">
                     {t("categories")}
                   </h3>
-                  <div className="space-y-1">
+                  <div className="max-h-[320px] overflow-y-auto pr-1 space-y-1 scrollbar-hide">
                     <button
                       onClick={() => handleCategoryChange(null)}
                       className={cn(
@@ -394,7 +452,7 @@ export default function ProductsClient({
                         )}
                       >
                         <span>{cat.icon}</span>
-                {locale === "hi" ? cat.nameHi : cat.name}
+                        {locale === "hi" ? cat.nameHi : cat.name}
                       </button>
                     ))}
                   </div>

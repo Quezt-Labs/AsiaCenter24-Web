@@ -129,11 +129,14 @@
   "tryCoupons": "Versuchen Sie diese Gutscheine",
   "youSave": "Sie sparen",
   "enterCouponCode": "Gutscheincode eingeben",
-  "apply": "Anwenden"
-,
+  "apply": "Anwenden",
   "popularity": "Beliebtheit",
   "priceLowHigh": "Preis: Niedrig → Hoch",
   "priceHighLow": "Preis: Hoch → Niedrig",
   "newest": "Neueste",
-  "rating": "Bewertung"
+  "rating": "Bewertung",
+  "previousPage": "Zurück",
+  "nextPage": "Weiter",
+  "page": "Seite",
+  "showMoreCategories": "Mehr anzeigen"
 }
