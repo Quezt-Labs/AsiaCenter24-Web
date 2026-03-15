@@ -64,8 +64,18 @@ api.interceptors.response.use(
           typeof window !== "undefined"
             ? localStorage.getItem("refreshToken")
             : null;
+        const deviceId =
+          typeof window !== "undefined" ? localStorage.getItem("deviceId") : null;
+        const deviceSecret =
+          typeof window !== "undefined"
+            ? localStorage.getItem("deviceSecret")
+            : null;
         if (!refreshToken) throw new Error("No refresh token");
-        const resp = await refreshAccessToken({ refreshToken });
+        const resp = await refreshAccessToken({
+          refreshToken,
+          deviceId: deviceId ?? undefined,
+          deviceSecret: deviceSecret ?? undefined,
+        });
         const newToken = resp.accessToken ?? resp.token;
         if (newToken) {
           localStorage.setItem("token", newToken);

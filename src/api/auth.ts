@@ -37,11 +37,17 @@ export interface VerifyOTPInput {
 }
 
 export interface VerifyOTPResponse {
-  success: boolean;
-  user?: { id: string; phone: string; name?: string; isVerified: boolean };
   accessToken?: string;
   token?: string;
   refreshToken?: string;
+  user?: {
+    id: string;
+    phone: string;
+    firstName?: string | null;
+    lastName?: string | null;
+  };
+  isNewUser?: boolean;
+  deviceSecret?: string;
 }
 
 // ─── API functions (used by hooks + interceptor) ───────────────────────────

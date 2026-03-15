@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -96,8 +96,25 @@ const floatingDots = [
   { size: 50, x: "15%", y: "75%", delay: 1.5 },
 ];
 
+const DEVICE_ID_KEY = "deviceId";
+
 const AuthModal = () => {
   const t = useTranslations();
+  const deviceIdRef = useRef<string | null>(null);
+
+  const getOrCreateDeviceId = () => {
+    if (deviceIdRef.current) return deviceIdRef.current;
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(DEVICE_ID_KEY);
+      if (stored) {
+        deviceIdRef.current = stored;
+        return stored;
+      }
+    }
+    const id = crypto.randomUUID();
+    deviceIdRef.current = id;
+    return id;
+  };
   const requestOTP = useRequestOTP();
   const verifyOTP = useVerifyOTP();
 
@@ -200,7 +217,7 @@ const AuthModal = () => {
   const handleVerifyOTP = async (otpValue: string) => {
     if (otpValue.length !== 4) return;
     verifyOTP.mutate(
-      { phone, countryCode, otp: otpValue, deviceId: crypto.randomUUID() },
+      { phone, countryCode, otp: otpValue, deviceId: getOrCreateDeviceId() },
       {
         onSuccess: () => {
           setDirection(1);

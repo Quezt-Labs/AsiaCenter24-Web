@@ -31,25 +31,30 @@ export function useVerifyOTP() {
 
   return useMutation({
     mutationFn: (input: VerifyOTPInput) => verifyOTP(input),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       const token = data.accessToken ?? (data as { token?: string }).token;
       const user = data.user;
-      if (typeof window !== "undefined" && token) {
-        localStorage.setItem("token", token);
-      }
-      if (data.refreshToken && typeof window !== "undefined") {
-        localStorage.setItem("refreshToken", data.refreshToken);
+      if (typeof window !== "undefined") {
+        if (token) localStorage.setItem("token", token);
+        if (data.refreshToken)
+          localStorage.setItem("refreshToken", data.refreshToken);
+        if (data.deviceSecret)
+          localStorage.setItem("deviceSecret", data.deviceSecret);
+        if (variables.deviceId)
+          localStorage.setItem("deviceId", variables.deviceId);
       }
       if (user) {
+        const name =
+          [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+          undefined;
         setUser({
           id: user.id,
           phone: user.phone,
-          name: user.name,
-          isVerified: user.isVerified,
+          name: name || undefined,
+          isVerified: true,
         });
       }
       queryClient.invalidateQueries({ queryKey: AUTH_KEYS.all });
-      // Modal controls its own close/redirect flow for UX (success animation)
     },
     meta: { action: "verifyOTP" },
   });
@@ -67,6 +72,8 @@ export function useLogout() {
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
+        localStorage.removeItem("deviceId");
+        localStorage.removeItem("deviceSecret");
       }
       clearStore();
       queryClient.clear();

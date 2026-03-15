@@ -51,6 +51,8 @@ export function useDeleteAccount() {
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
+        localStorage.removeItem("deviceId");
+        localStorage.removeItem("deviceSecret");
         window.location.href = "/";
       }
     },
