@@ -8,58 +8,96 @@ export interface LandingParams {
   limit?: number;
 }
 
+/** Paginated product response */
+interface PaginatedProductsResponse {
+  items?: ApiProduct[];
+}
+
+/** Paginated category response */
+interface PaginatedCategoriesResponse {
+  items?: ApiCategoryWithProducts[];
+}
+
+function unwrapProductList(
+  data: ApiProduct[] | PaginatedProductsResponse | undefined,
+): ApiProduct[] {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  const isPaginated = !Array.isArray(data) && "items" in data;
+  return isPaginated && Array.isArray((data as PaginatedProductsResponse).items)
+    ? (data as PaginatedProductsResponse).items!
+    : [];
+}
+
+function unwrapCategoryList(
+  data: ApiCategoryWithProducts[] | PaginatedCategoriesResponse | undefined,
+): ApiCategoryWithProducts[] {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  const isPaginated = !Array.isArray(data) && "items" in data;
+  return isPaginated &&
+    Array.isArray((data as PaginatedCategoriesResponse).items)
+    ? (data as PaginatedCategoriesResponse).items!
+    : [];
+}
+
 /**
  * Get featured products for the landing page with tax calculation.
  */
 export async function getFeaturedProducts(
-  params?: LandingParams
+  params?: LandingParams,
 ): Promise<Product[]> {
-  const { data } = await api.get<ApiProduct[]>("/landing/featured-products", {
-    params: { limit: params?.limit ?? 10, country: params?.country },
-  });
-  const list = Array.isArray(data) ? data : [];
-  return list.map(mapApiProductToProduct);
+  const { data } = await api.get<ApiProduct[] | PaginatedProductsResponse>(
+    "/landing/featured-products",
+    {
+      params: { limit: params?.limit ?? 10, country: params?.country },
+    },
+  );
+  return unwrapProductList(data).map(mapApiProductToProduct);
 }
 
 /**
  * Get trending products for the landing page with tax calculation.
  */
 export async function getTrendingProducts(
-  params?: LandingParams
+  params?: LandingParams,
 ): Promise<Product[]> {
-  const { data } = await api.get<ApiProduct[]>("/landing/trending-products", {
-    params: { limit: params?.limit ?? 10, country: params?.country },
-  });
-  const list = Array.isArray(data) ? data : [];
-  return list.map(mapApiProductToProduct);
+  const { data } = await api.get<ApiProduct[] | PaginatedProductsResponse>(
+    "/landing/trending-products",
+    {
+      params: { limit: params?.limit ?? 10, country: params?.country },
+    },
+  );
+  return unwrapProductList(data).map(mapApiProductToProduct);
 }
 
 /**
  * Get popular products sorted by popularity score with tax calculation.
  */
 export async function getPopularProducts(
-  params?: LandingParams
+  params?: LandingParams,
 ): Promise<Product[]> {
-  const { data } = await api.get<ApiProduct[]>("/landing/popular-products", {
-    params: { limit: params?.limit ?? 10, country: params?.country },
-  });
-  const list = Array.isArray(data) ? data : [];
-  return list.map(mapApiProductToProduct);
+  const { data } = await api.get<ApiProduct[] | PaginatedProductsResponse>(
+    "/landing/popular-products",
+    {
+      params: { limit: params?.limit ?? 10, country: params?.country },
+    },
+  );
+  return unwrapProductList(data).map(mapApiProductToProduct);
 }
 
 /**
  * Get top-level categories with a few products each for the landing page.
  */
 export async function getCategoriesWithProducts(
-  params?: LandingParams
+  params?: LandingParams,
 ): Promise<Category[]> {
-  const { data } = await api.get<ApiCategoryWithProducts[]>(
-    "/landing/categories-with-products",
-    {
-      params: { limit: params?.limit ?? 6, country: params?.country },
-    }
-  );
-  const list = Array.isArray(data) ? data : [];
+  const { data } = await api.get<
+    ApiCategoryWithProducts[] | PaginatedCategoriesResponse
+  >("/landing/categories-with-products", {
+    params: { limit: params?.limit ?? 6, country: params?.country },
+  });
+  const list = unwrapCategoryList(data);
   return list.map((cat) => {
     const products = cat.products ?? [];
     const productCount =
@@ -83,14 +121,13 @@ export async function getCategoriesWithProducts(
  */
 export async function getCategoryProducts(
   categoryId: string,
-  params?: Omit<LandingParams, "limit"> & { limit?: number }
+  params?: Omit<LandingParams, "limit"> & { limit?: number },
 ): Promise<Product[]> {
-  const { data } = await api.get<ApiProduct[]>(
+  const { data } = await api.get<ApiProduct[] | PaginatedProductsResponse>(
     `/landing/category/${categoryId}/products`,
     {
       params: { limit: params?.limit ?? 12, country: params?.country },
-    }
+    },
   );
-  const list = Array.isArray(data) ? data : [];
-  return list.map(mapApiProductToProduct);
+  return unwrapProductList(data).map(mapApiProductToProduct);
 }
