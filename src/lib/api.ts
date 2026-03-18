@@ -71,10 +71,11 @@ api.interceptors.response.use(
             ? localStorage.getItem("deviceSecret")
             : null;
         if (!refreshToken) throw new Error("No refresh token");
+        if (!deviceId || !deviceSecret) throw new Error("Missing device credentials");
         const resp = await refreshAccessToken({
           refreshToken,
-          deviceId: deviceId ?? undefined,
-          deviceSecret: deviceSecret ?? undefined,
+          deviceId,
+          deviceSecret,
         });
         const newToken = resp.accessToken ?? resp.token;
         if (newToken) {

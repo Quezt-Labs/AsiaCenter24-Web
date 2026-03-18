@@ -110,6 +110,10 @@ const AuthModal = () => {
         deviceIdRef.current = stored;
         return stored;
       }
+      const id = crypto.randomUUID();
+      deviceIdRef.current = id;
+      localStorage.setItem(DEVICE_ID_KEY, id); // persist immediately for refresh flow
+      return id;
     }
     const id = crypto.randomUUID();
     deviceIdRef.current = id;

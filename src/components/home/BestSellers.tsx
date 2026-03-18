@@ -2,26 +2,14 @@
 
 import SectionHeader from "@components/home/SectionHeader";
 import ProductCard from "@components/products/ProductCard";
+import ProductCardSkeleton from "@components/products/ProductCardSkeleton";
 import { useTranslations } from "next-intl";
 import { usePopularProducts } from "@/hooks/useLanding";
-import { products as staticProducts } from "@/data/products";
-import type { Product } from "@/types/product";
 
-export default function BestSellers({
-  bestSellers,
-}: {
-  bestSellers?: Product[];
-}) {
+export default function BestSellers() {
   const t = useTranslations();
-  const { data: popularProducts, isError: landingError } = usePopularProducts({
-    limit: 4,
-  });
-  const list =
-    popularProducts && popularProducts.length > 0 && !landingError
-      ? popularProducts
-      : bestSellers && bestSellers.length > 0
-        ? bestSellers
-        : staticProducts.filter((p) => p.isBestSeller).slice(0, 4);
+  const { data: popularProducts, isLoading } = usePopularProducts({ limit: 4 });
+  const list = popularProducts ?? [];
 
   return (
     <section className="py-6 sm:py-8 lg:py-12 bg-secondary/20">
@@ -32,9 +20,13 @@ export default function BestSellers({
           linkLabel={t("viewAll")}
         />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
-          {list.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))
+            : list.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
         </div>
       </div>
     </section>

@@ -21,13 +21,12 @@ export function mapApiProductToProduct(apiProd: ApiProduct): Product {
     apiProd.categorySlug ??
     apiProd.category_slug ??
     cat?.slug ??
-    apiProd.slug ??
     "";
   const categoryName = cat?.name ?? "";
   const weightOpts = apiProd.weightOptions ?? apiProd.weight_options ?? [];
   const variants = apiProd.variants ?? [];
   const firstVariant = variants[0] as
-    | { price?: number; originalPrice?: number; original_price?: number }
+    | { price?: number; originalPrice?: number; original_price?: number; weight?: string }
     | undefined;
   const hasWeightOpts = weightOpts.length > 0;
   const basePrice =
@@ -42,7 +41,8 @@ export function mapApiProductToProduct(apiProd: ApiProduct): Product {
     firstVariant?.originalPrice ??
     firstVariant?.original_price ??
     basePrice;
-  const images = apiProd.images ?? (apiProd.image ? [apiProd.image] : []);
+  const rawImages = apiProd.images ?? (apiProd.image ? [apiProd.image] : []);
+  const images = Array.isArray(rawImages) ? rawImages : [];
   const mainImage = apiProd.image ?? images[0] ?? PLACEHOLDER_IMAGE;
   const rating =
     apiProd.rating ??
@@ -52,12 +52,12 @@ export function mapApiProductToProduct(apiProd: ApiProduct): Product {
 
   return {
     id: apiProd.id,
-    slug: apiProd.slug,
+    slug: apiProd.slug ?? apiProd.id,
     name: apiProd.name,
     nameHi: apiProd.nameHi ?? apiProd.name,
     brand: apiProd.brand ?? "",
     category: categoryName,
-    categorySlug: categorySlug || apiProd.slug || "",
+    categorySlug: categorySlug || "",
     description: apiProd.description ?? apiProd.shortDescription ?? "",
     descriptionHi: apiProd.descriptionHi ?? apiProd.description ?? "",
     price: basePrice,
@@ -167,13 +167,16 @@ export async function getProductById(
 
 /**
  * Get a product by slug with tax calculation.
+ * Uses PRODUCT_SLUG_PATH env: "slug" → /products/slug/{slug}, else → /products/{slug}
  */
 export async function getProductBySlug(
   slug: string,
   country?: string,
 ): Promise<Product | null> {
+  const useSlugPath = process.env.NEXT_PUBLIC_PRODUCT_SLUG_PATH === "slug";
+  const path = useSlugPath ? `products/slug/${slug}` : `products/${slug}`;
   try {
-    const { data } = await api.get<ApiProduct>(`/products/slug/${slug}`, {
+    const { data } = await api.get<ApiProduct>(`/${path}`, {
       params: country ? { country } : undefined,
     });
     return data ? mapApiProductToProduct(data) : null;

@@ -1,7 +1,8 @@
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Clock, Check, CalendarDays } from "lucide-react";
-import { deliverySlots } from "@/data/products";
+import { useDeliverySlots } from "@/hooks/useDeliverySlots";
+import type { DeliverySlot } from "@/api/deliverySlots";
 import { cn } from "@/lib/utils";
 
 interface DeliverySlotSectionProps {
@@ -14,9 +15,10 @@ const DeliverySlotSection = ({
   onSelectSlot,
 }: DeliverySlotSectionProps) => {
   const t = useTranslations();
+  const { data: deliverySlots = [] } = useDeliverySlots();
 
   const groupedSlots = deliverySlots.reduce<
-    Record<string, typeof deliverySlots>
+    Record<string, DeliverySlot[]>
   >((acc, slot) => {
     if (!acc[slot.date]) acc[slot.date] = [];
     acc[slot.date].push(slot);
@@ -55,6 +57,12 @@ const DeliverySlotSection = ({
         </div>
       </div>
 
+      {deliverySlots.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-4">
+          {t("noSlotsAvailable") ?? "No delivery slots available. Please try again later."}
+        </p>
+      ) : (
+        <>
       {Object.entries(groupedSlots).map(([date, slots], gi) => (
         <div key={date} className="mb-4 last:mb-0">
           <div className="flex items-center gap-2 mb-2.5">
@@ -117,6 +125,8 @@ const DeliverySlotSection = ({
           </div>
         </div>
       ))}
+        </>
+      )}
     </motion.div>
   );
 };

@@ -12,11 +12,8 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
-import {
-  products as staticProducts,
-  categories as staticCategories,
-} from "@/data/products";
 import ProductCard from "@/components/products/ProductCard";
+import ProductCardSkeleton from "@/components/products/ProductCardSkeleton";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
 import { useCategories } from "@/hooks/useCategories";
@@ -71,22 +68,23 @@ export default function ProductsClient({
     isActive: true,
     limit: 100,
   });
-  const currentCategoryFromList = (apiCategories ?? staticCategories).find(
+  const currentCategoryFromList = (apiCategories ?? []).find(
     (c) => c.slug === categoryParam,
   );
   const categoryId = currentCategoryFromList?.id;
 
-  const { data: paginatedData, isError: productsError } = useProductsPaginated({
+  const {
+    data: paginatedData,
+    isError: productsError,
+    isLoading: productsLoading,
+  } = useProductsPaginated({
     categoryId: categoryId || undefined,
     isActive: true,
     limit: 12,
     page: currentPage,
   });
 
-  const categories =
-    apiCategories && apiCategories.length > 0 && !categoriesError
-      ? apiCategories
-      : staticCategories;
+  const categories = apiCategories ?? [];
   const productsFromApi =
     paginatedData && !productsError ? paginatedData.products : null;
   const { total: totalProducts, totalPages } = paginatedData ?? {
@@ -128,14 +126,9 @@ export default function ProductsClient({
   };
 
   const filteredProducts = useMemo(() => {
-    const baseProducts =
-      productsFromApi !== null ? productsFromApi : staticProducts;
+    const baseProducts = productsFromApi ?? [];
     let result = [...baseProducts];
-    // Only filter by category client-side when using static products.
     // When categoryId is passed, API already returns category-filtered products.
-    if (categoryParam && productsFromApi === null) {
-      result = result.filter((p) => p.categorySlug === categoryParam);
-    }
     if (filterParam === "bestseller")
       result = result.filter((p) => p.isBestSeller);
     else if (filterParam === "new")
@@ -348,7 +341,13 @@ export default function ProductsClient({
 
           {/* Products Grid */}
           <div className="flex-1">
-            {filteredProducts.length === 0 ? (
+            {productsLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-lg text-muted-foreground mb-2">
                   {t("noResults")}

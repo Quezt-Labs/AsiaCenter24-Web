@@ -18,8 +18,8 @@ export interface RequestOTPResponse {
 
 export interface RefreshTokenInput {
   refreshToken: string;
-  deviceId?: string;
-  deviceSecret?: string;
+  deviceId: string;
+  deviceSecret: string;
 }
 
 export interface RefreshTokenResponse {

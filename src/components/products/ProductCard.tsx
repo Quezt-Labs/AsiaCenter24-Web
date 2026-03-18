@@ -18,7 +18,6 @@ import { Product } from "@/types/product";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlist } from "@/hooks/useWishlist";
 import { cn } from "@/lib/utils";
-import { slugify } from "@/lib/utils";
 
 interface ProductCardProps {
   product: Product;
@@ -69,7 +68,7 @@ const ProductCard = ({
       <div className="bg-card rounded-2xl border border-border/40 overflow-hidden transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
         {/* Image */}
         <Link
-          href={`/products/${product.slug ?? slugify(product.name)}`}
+          href={`/products/${product.slug}`}
           className="relative block overflow-hidden"
         >
           <div
@@ -148,7 +147,7 @@ const ProductCard = ({
               "absolute top-2 right-2 rounded-full flex items-center justify-center transition-all shadow-sm",
               compact ? "w-7 h-7 top-1.5 right-1.5" : "w-9 h-9",
               isWishlisted
-                ? "bg-red-50 text-red-500 shadow-red-100"
+                ? "bg-red-500/15 text-red-600 shadow-red-200"
                 : "bg-background/80 backdrop-blur-sm text-muted-foreground hover:text-red-500 hover:bg-red-50",
             )}
             aria-label={
@@ -157,7 +156,8 @@ const ProductCard = ({
           >
             <Heart
               size={compact ? 13 : 17}
-              fill={isWishlisted ? "currentColor" : "none"}
+              fill={isWishlisted ? "#dc2626" : "none"}
+              className={isWishlisted ? "text-red-600" : ""}
             />
           </motion.button>
         </Link>
@@ -170,7 +170,7 @@ const ProductCard = ({
             </p>
           )}
 
-          <Link href={`/products/${product.slug ?? slugify(product.name)}`}>
+          <Link href={`/products/${product.slug}`}>
             <h3
               className={cn(
                 "font-medium text-foreground hover:text-primary transition-colors",

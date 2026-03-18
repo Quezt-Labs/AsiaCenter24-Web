@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Ref } from "react";
-import { testimonials } from "@/data/products";
+import { useTestimonials } from "@/hooks/useTestimonials";
 
 const containerVariants = {
   hidden: {},
@@ -23,6 +23,9 @@ const cardVariants = {
 
 const Testimonials = () => {
   const { ref, isInView } = useScrollReveal(0.15);
+  const { data: testimonials = [] } = useTestimonials();
+
+  if (testimonials.length === 0) return null;
 
   return (
     <section className="py-12 lg:py-20 bg-secondary/30">

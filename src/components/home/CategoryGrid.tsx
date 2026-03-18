@@ -3,31 +3,23 @@
 import { useRef, useState, useEffect } from "react";
 import SectionHeader from "@components/home/SectionHeader";
 import CategoryCard from "@components/products/CategoryCard";
+import CategoryCardSkeleton from "@components/products/CategoryCardSkeleton";
 import { useTranslations } from "next-intl";
 import { useCategoriesWithProducts } from "@/hooks/useLanding";
-import { categories as staticCategories } from "@/data/products";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
-import type { Category } from "@/types/product";
 
 const SCROLL_AMOUNT = 280;
 
-export default function CategoryGrid({
-  categories: propCategories,
-}: {
-  categories?: Category[];
-}) {
+export default function CategoryGrid() {
   const t = useTranslations();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  const { data: landingCategories, isError: landingError } =
+  const { data: landingCategories, isLoading } =
     useCategoriesWithProducts({ limit: 20 });
-  const categories =
-    landingCategories && landingCategories.length > 0 && !landingError
-      ? landingCategories
-      : (propCategories ?? staticCategories);
+  const categories = landingCategories ?? [];
 
   const updateScrollState = () => {
     const el = scrollRef.current;
@@ -47,7 +39,7 @@ export default function CategoryGrid({
       el.removeEventListener("scroll", updateScrollState);
       resizeObserver.disconnect();
     };
-  }, [categories]);
+  }, [categories, isLoading]);
 
   const scroll = (direction: "left" | "right") => {
     scrollRef.current?.scrollBy({
@@ -97,14 +89,23 @@ export default function CategoryGrid({
             ref={scrollRef}
             className="flex gap-2 sm:gap-3 lg:gap-4 overflow-x-auto scroll-smooth scrollbar-hide pb-2 sm:pb-3"
           >
-            {categories?.map((category, index) => (
-              <div
-                key={category.id}
-                className="shrink-0 w-[calc(33.333%-0.5rem)] min-w-[100px] sm:w-[calc(25%-0.75rem)] sm:min-w-[110px] lg:w-[calc(14.28%-1rem)] lg:min-w-[120px]"
-              >
-                <CategoryCard category={category} index={index} />
-              </div>
-            ))}
+            {isLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="shrink-0 w-[calc(33.333%-0.5rem)] min-w-[100px] sm:w-[calc(25%-0.75rem)] sm:min-w-[110px] lg:w-[calc(14.28%-1rem)] lg:min-w-[120px]"
+                  >
+                    <CategoryCardSkeleton />
+                  </div>
+                ))
+              : categories?.map((category, index) => (
+                  <div
+                    key={category.id}
+                    className="shrink-0 w-[calc(33.333%-0.5rem)] min-w-[100px] sm:w-[calc(25%-0.75rem)] sm:min-w-[110px] lg:w-[calc(14.28%-1rem)] lg:min-w-[120px]"
+                  >
+                    <CategoryCard category={category} index={index} />
+                  </div>
+                ))}
           </div>
         </div>
       </div>

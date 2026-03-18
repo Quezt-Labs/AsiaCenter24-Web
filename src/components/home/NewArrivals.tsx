@@ -2,28 +2,16 @@
 
 import SectionHeader from "@components/home/SectionHeader";
 import ProductCard from "@components/products/ProductCard";
+import ProductCardSkeleton from "@components/products/ProductCardSkeleton";
 import { useTranslations } from "next-intl";
 import { useTrendingProducts } from "@/hooks/useLanding";
-import { products as staticProducts } from "@/data/products";
-import type { Product } from "@/types/product";
 
-export default function NewArrivals({
-  newArrivals,
-}: {
-  newArrivals?: Product[];
-}) {
+export default function NewArrivals() {
   const t = useTranslations();
-  const { data: trendingProducts, isError: landingError } = useTrendingProducts(
-    {
-      limit: 4,
-    },
-  );
-  const list =
-    trendingProducts && trendingProducts.length > 0 && !landingError
-      ? trendingProducts
-      : newArrivals && newArrivals.length > 0
-        ? newArrivals
-        : staticProducts.filter((p) => p.isNewArrival).slice(0, 4);
+  const { data: trendingProducts, isLoading } = useTrendingProducts({
+    limit: 4,
+  });
+  const list = trendingProducts ?? [];
 
   return (
     <section className="py-6 sm:py-8 lg:py-12">
@@ -34,9 +22,13 @@ export default function NewArrivals({
           linkLabel={t("viewAll")}
         />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
-          {list.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))
+            : list.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
         </div>
       </div>
     </section>

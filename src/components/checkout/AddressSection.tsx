@@ -1,13 +1,26 @@
  "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Plus, Check, X, ChevronDown, Home } from "lucide-react";
 import { useAddressStore } from "@/store/useAddressStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import {
+  useAddresses,
+  useCreateAddress,
+} from "@/hooks/useAddresses";
 import { Address } from "@/types/product";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+/** Normalize phone to E.164 (e.g. +919876543210) */
+function toE164(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10 && !phone.startsWith("+")) return `+91${digits}`;
+  if (digits.length === 12 && digits.startsWith("91")) return `+${digits}`;
+  return phone.startsWith("+") ? phone : `+${digits}`;
+}
 
 interface AddressSectionProps {
   selectedAddressId: string | null;
@@ -19,8 +32,13 @@ const AddressSection = ({
   onSelectAddress,
 }: AddressSectionProps) => {
   const t = useTranslations();
-  const { user } = useAuthStore();
-  const { addresses, addAddress } = useAddressStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const { addresses: localAddresses, addAddress: localAddAddress } =
+    useAddressStore();
+  const { data: apiAddresses = [] } = useAddresses(isAuthenticated);
+  const createAddressMutation = useCreateAddress();
+
+  const addresses = isAuthenticated ? apiAddresses : localAddresses;
 
   const [showForm, setShowForm] = useState(false);
   const [showAllAddresses, setShowAllAddresses] = useState(false);
@@ -34,11 +52,15 @@ const AddressSection = ({
     pincode: "",
   });
 
+  useEffect(() => {
+    setForm((f) => ({ ...f, phone: user?.phone || f.phone }));
+  }, [user?.phone]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSaveAddress = () => {
+  const handleSaveAddress = async () => {
     if (
       !form.name ||
       !form.phone ||
@@ -48,18 +70,63 @@ const AddressSection = ({
       !form.pincode
     )
       return;
-    const newAddr = addAddress({ ...form, isDefault: false });
-    onSelectAddress(newAddr);
-    setShowForm(false);
-    setForm({
-      name: "",
-      phone: user?.phone || "",
-      addressLine1: "",
-      addressLine2: "",
-      city: "",
-      state: "",
-      pincode: "",
-    });
+
+    if (isAuthenticated) {
+      createAddressMutation.mutate(
+        {
+          fullName: form.name.trim(),
+          phoneE164: toE164(form.phone),
+          addressLine1: form.addressLine1.trim(),
+          addressLine2: form.addressLine2?.trim() || undefined,
+          city: form.city.trim(),
+          state: form.state.trim(),
+          postalCode: form.pincode.trim(),
+          country: "IN",
+          isDefault: addresses.length === 0,
+        },
+        {
+          onSuccess: (newAddr) => {
+            onSelectAddress(newAddr);
+            setShowForm(false);
+            setForm({
+              name: "",
+              phone: user?.phone || "",
+              addressLine1: "",
+              addressLine2: "",
+              city: "",
+              state: "",
+              pincode: "",
+            });
+            toast.success(t("addressSaved") ?? "Address saved");
+          },
+          onError: () => {
+            toast.error(t("addressSaveError") ?? "Failed to save address");
+          },
+        },
+      );
+    } else {
+      const newAddr = localAddAddress({
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        addressLine1: form.addressLine1.trim(),
+        addressLine2: form.addressLine2?.trim(),
+        city: form.city.trim(),
+        state: form.state.trim(),
+        pincode: form.pincode.trim(),
+        isDefault: addresses.length === 0,
+      });
+      onSelectAddress(newAddr);
+      setShowForm(false);
+      setForm({
+        name: "",
+        phone: user?.phone || "",
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        state: "",
+        pincode: "",
+      });
+    }
   };
 
   const displayedAddresses = showAllAddresses
@@ -279,10 +346,13 @@ const AddressSection = ({
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleSaveAddress}
-                className="w-full sm:w-auto px-6 py-3 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-primary/15"
+                disabled={createAddressMutation.isPending && isAuthenticated}
+                className="w-full sm:w-auto px-6 py-3 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-primary/15 disabled:opacity-50"
               >
                 <Check size={16} />
-                {t("saveAndDeliver")}
+                {createAddressMutation.isPending && isAuthenticated
+                  ? t("saving")
+                  : t("saveAndDeliver")}
               </motion.button>
             </div>
           </motion.div>

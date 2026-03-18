@@ -6,9 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { bannerSlides } from "@/data/products";
 import { useBanners } from "@/hooks/useBanners";
 import type { Banner } from "@/types/banner";
+import HeroCarouselSkeleton from "./HeroCarouselSkeleton";
 
 type SlideItem = {
   id: string;
@@ -39,7 +39,7 @@ function mapBannerToSlide(b: Banner): SlideItem {
 
 const HeroCarousel = () => {
   const locale = useLocale();
-  const { data: apiBanners, isError } = useBanners("HOME_HERO");
+  const { data: apiBanners, isError, isLoading } = useBanners("HOME_HERO");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -47,18 +47,7 @@ const HeroCarousel = () => {
     if (apiBanners && apiBanners.length > 0 && !isError) {
       return apiBanners.map(mapBannerToSlide);
     }
-    return bannerSlides.map((s) => ({
-      id: s.id,
-      title: s.title,
-      titleHi: s.titleHi,
-      subtitle: s.subtitle,
-      subtitleHi: s.subtitleHi,
-      image: s.image,
-      cta: s.cta,
-      ctaHi: s.ctaHi,
-      ctaLink: "/products",
-      bgColor: s.bgColor,
-    }));
+    return [];
   }, [apiBanners, isError]);
 
   const nextSlide = useCallback(() => {
@@ -78,6 +67,7 @@ const HeroCarousel = () => {
   }, [nextSlide, slides.length]);
 
   const slide = slides[currentSlide];
+  if (isLoading) return <HeroCarouselSkeleton />;
   if (!slide || slides.length === 0) return null;
 
   const slideVariants = {

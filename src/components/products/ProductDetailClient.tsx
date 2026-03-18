@@ -20,10 +20,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { Product } from "@/types/product";
-import {
-  reviews as sampleReviews,
-  products as allProducts,
-} from "@/data/products";
 import { useProductFaqs } from "@/hooks/useProductFaqs";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductReviews, useCreateReview } from "@/hooks/useProductReviews";
@@ -77,7 +73,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     selectedWeightOption?.originalPrice || product.originalPrice;
 
   const { data: apiProducts } = useProducts({ isActive: true });
-  const productsList = apiProducts ?? allProducts;
+  const productsList = apiProducts ?? [];
   const relatedProducts: Product[] = productsList
     .filter(
       (p) => p.categorySlug === product.categorySlug && p.id !== product.id,
@@ -87,11 +83,8 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const { data: faqs } = useProductFaqs(product.id);
   const hasFaqs = faqs && faqs.length > 0;
 
-  const { data: apiReviews, isError: reviewsError } = useProductReviews(
-    product.id
-  );
-  const reviews =
-    apiReviews !== undefined && !reviewsError ? apiReviews : sampleReviews;
+  const { data: apiReviews } = useProductReviews(product.id);
+  const reviews = apiReviews ?? [];
 
   const { isAuthenticated, openAuthModal } = useAuthStore();
   const createReviewMutation = useCreateReview(product.id);

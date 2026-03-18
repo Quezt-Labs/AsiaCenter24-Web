@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { User, ChevronRight, Pencil, Trash2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useUserProfile, useUpdateProfile, useDeleteAccount } from "@/hooks/useUserProfile";
+import {
+  useUserProfile,
+  useUpdateProfile,
+  useDeleteAccount,
+} from "@/hooks/useUserProfile";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
@@ -38,8 +43,7 @@ export default function ProfilePage() {
   }, [profile]);
 
   const displayName = profile
-    ? [profile.firstName, profile.lastName].filter(Boolean).join(" ").trim() ||
-      profile.phone
+    ? [profile.firstName, profile.lastName].filter(Boolean).join(" ").trim()
     : "";
 
   if (!isAuthenticated) {
@@ -67,9 +71,17 @@ export default function ProfilePage() {
   }
 
   const handleSave = () => {
+    const fName = firstName.trim();
+    const lName = lastName.trim();
+    if (!fName || !lName) {
+      toast.error(t("nameRequired"), {
+        description: t("firstNameLastNameRequired"),
+      });
+      return;
+    }
     updateProfile.mutate(
-      { firstName: firstName.trim(), lastName: lastName.trim() },
-      { onSuccess: () => setIsEditing(false) }
+      { firstName: fName, lastName: lName },
+      { onSuccess: () => setIsEditing(false) },
     );
   };
 
@@ -93,13 +105,24 @@ export default function ProfilePage() {
         </h1>
 
         {isLoading ? (
-          <div className="p-8 bg-card rounded-2xl border border-border/50 animate-pulse">
-            <div className="h-6 bg-secondary rounded w-1/3 mb-4" />
-            <div className="h-4 bg-secondary rounded w-2/3" />
+          <div className="p-6 sm:p-8 bg-card rounded-2xl border border-border/50 animate-pulse space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-secondary" />
+              <div className="space-y-2">
+                <div className="h-4 bg-secondary rounded w-32" />
+                <div className="h-3 bg-secondary rounded w-24" />
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="h-4 bg-secondary rounded w-full" />
+              <div className="h-4 bg-secondary rounded w-full" />
+            </div>
           </div>
         ) : isError ? (
           <div className="p-8 bg-card rounded-2xl border border-border/50 text-center">
-            <p className="text-muted-foreground mb-4">{t("profileLoadError")}</p>
+            <p className="text-muted-foreground mb-4">
+              {t("profileLoadError")}
+            </p>
             <button
               onClick={() => window.location.reload()}
               className="text-primary font-medium hover:underline"
@@ -110,6 +133,30 @@ export default function ProfilePage() {
         ) : profile ? (
           <div className="space-y-6">
             <div className="p-6 sm:p-8 bg-card rounded-2xl border border-border/50">
+              {/* Avatar with initials */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-lg font-semibold text-primary">
+                    {displayName
+                      ? (
+                          displayName[0] +
+                          (displayName.split(" ")[1]?.[0] ?? "")
+                        )
+                          .toUpperCase()
+                          .slice(0, 2)
+                      : "?"}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-foreground truncate">
+                    {displayName || t("addYourName")}
+                  </p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {profile.phone}
+                  </p>
+                </div>
+              </div>
+
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-foreground">
                   {t("profileInfo")}
@@ -149,56 +196,81 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
-                      {t("firstName")}
+                      {t("firstName")}{" "}
+                      <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder={t("enterFirstName")}
+                      required
                       className="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
-                      {t("lastName")}
+                      {t("lastName")}{" "}
+                      <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder={t("enterLastName")}
+                      required
                       className="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5">
                       {t("fullName")}
                     </p>
-                    <p className="text-foreground font-medium">
-                      {displayName || "—"}
+                    <p
+                      className={cn(
+                        "font-medium",
+                        displayName
+                          ? "text-foreground"
+                          : "text-muted-foreground italic",
+                      )}
+                    >
+                      {displayName || t("addYourName")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5">
                       {t("phoneNumber")}
                     </p>
-                    <p className="text-foreground font-medium">{profile.phone}</p>
+                    <p className="text-foreground font-medium">
+                      {profile.phone}
+                    </p>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4">
               <Link
                 href="/my-orders"
-                className="flex-1 flex items-center justify-between p-4 bg-card rounded-xl border border-border/50 hover:border-primary/20 transition-colors group"
+                className="flex items-center justify-between p-4 bg-card rounded-xl border border-border/50 hover:border-primary/20 transition-colors group"
               >
                 <span className="font-medium text-foreground">
                   {t("myOrders")}
+                </span>
+                <ChevronRight
+                  size={18}
+                  className="text-muted-foreground group-hover:text-primary transition-colors"
+                />
+              </Link>
+              <Link
+                href="/profile/addresses"
+                className="flex items-center justify-between p-4 bg-card rounded-xl border border-border/50 hover:border-primary/20 transition-colors group"
+              >
+                <span className="font-medium text-foreground">
+                  {t("savedAddresses")}
                 </span>
                 <ChevronRight
                   size={18}
@@ -213,7 +285,7 @@ export default function ProfilePage() {
                 disabled={deleteAccount.isPending}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors",
-                  "text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                  "text-destructive hover:bg-destructive/10 disabled:opacity-50",
                 )}
               >
                 <Trash2 size={16} />
@@ -227,7 +299,9 @@ export default function ProfilePage() {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteAccountConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("deleteAccountConfirmTitle")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t("deleteAccountConfirmDesc")}
             </AlertDialogDescription>

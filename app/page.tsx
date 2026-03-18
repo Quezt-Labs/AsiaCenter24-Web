@@ -1,8 +1,7 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 import HeroCarouselClient from "@/components/home/HeroCarouselClient";
 import TestimonialsClient from "@/components/home/TestimonialsClient";
-import { bannerSlides } from "@/data/products";
 import type { Metadata } from "next";
 import PageTransition from "@components/layout/PageTransition";
 import CategoryGrid from "@/components/home/CategoryGrid";
@@ -10,7 +9,6 @@ import FeaturedProducts from "@/components/home/FeaturedProducts";
 import WhyChooseUs from "@components/home/WhyChooseUs";
 import BestSellers from "@/components/home/BestSellers";
 import NewArrivals from "@/components/home/NewArrivals";
-import { categories, products } from "@data/products";
 import OfferBanner from "@/components/home/OfferBanner";
 
 export async function generateMetadata({
@@ -32,9 +30,7 @@ export async function generateMetadata({
     hi: "FreshMart — ताज़ा किराना, तेज़ डिलीवरी। श्रेणियाँ, बेस्टसेलर और नई कलेक्शन देखें।",
   };
 
-  const heroImage =
-    bannerSlides?.[0]?.image ??
-    "https://asia-center24.example.com/og-image.jpg";
+  const heroImage = "https://asia-center24.example.com/og-image.jpg";
 
   return {
     title: titles[lang] ?? titles.en,
@@ -56,13 +52,6 @@ export async function generateMetadata({
 }
 
 export default function HomePage() {
-  const featuredProducts =
-    products?.filter((p: any) => p.isFeatured || p.isBestSeller).slice(0, 8) ?? [];
-  const bestSellers =
-    products?.filter((p: any) => p.isBestSeller).slice(0, 4) ?? [];
-  const newArrivals =
-    products?.filter((p: any) => p.isNewArrival).slice(0, 4) ?? [];
-
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -80,10 +69,10 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <HeroCarouselClient />
-      <CategoryGrid categories={categories} />
-      <FeaturedProducts featuredProducts={featuredProducts} />
-      <BestSellers bestSellers={bestSellers} />
-      <NewArrivals newArrivals={newArrivals} />
+      <CategoryGrid />
+      <FeaturedProducts />
+      <BestSellers />
+      <NewArrivals />
       <OfferBanner />
       <WhyChooseUs />
       <TestimonialsClient />
