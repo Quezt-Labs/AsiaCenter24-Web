@@ -5,8 +5,12 @@ import { Product, CartItem } from '@/types/product';
 interface CartState {
   items: CartItem[];
   addItem: (product: Product, quantity?: number, weight?: string) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeItem: (productId: string, selectedWeight?: string) => void;
+  updateQuantity: (
+    productId: string,
+    quantity: number,
+    selectedWeight?: string,
+  ) => void;
   clearCart: () => void;
   getItemCount: () => number;
   getSubtotal: () => number;
@@ -43,21 +47,28 @@ export const useCartStore = create<CartState>()(
         });
       },
 
-      removeItem: (productId) => {
+      removeItem: (productId, selectedWeight) => {
         set((state) => ({
-          items: state.items.filter((item) => item.product.id !== productId),
+          items: state.items.filter(
+            (item) =>
+              item.product.id !== productId ||
+              (selectedWeight != null && item.selectedWeight !== selectedWeight),
+          ),
         }));
       },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (productId, quantity, selectedWeight) => {
         if (quantity <= 0) {
-          get().removeItem(productId);
+          get().removeItem(productId, selectedWeight);
           return;
         }
 
         set((state) => ({
           items: state.items.map((item) =>
-            item.product.id === productId ? { ...item, quantity } : item
+            item.product.id === productId &&
+            (selectedWeight == null || item.selectedWeight === selectedWeight)
+              ? { ...item, quantity }
+              : item
           ),
         }));
       },

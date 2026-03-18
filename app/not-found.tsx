@@ -3,10 +3,15 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <main style={{ padding: 24 }}>
-      <h2>Page not found</h2>
-      <p>
-        Sorry, we couldn't find that page. Go back <Link href="/">home</Link>.
-      </p>
+      <div className="flex min-h-screen items-center justify-center bg-muted">
+        <div className="text-center">
+          <h1 className="mb-4 text-4xl font-bold">404</h1>
+          <p className="mb-4 text-xl text-muted-foreground">
+            Oops! Page not found
+          </p>
+          <Link href="/">home</Link>
+        </div>
+      </div>
     </main>
   );
 }

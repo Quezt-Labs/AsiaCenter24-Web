@@ -50,8 +50,10 @@ const ProductCard = ({
     setTimeout(() => setIsAdded(false), 1500);
   };
 
-  const handleIncrement = () => updateQuantity(product.id, currentQuantity + 1);
-  const handleDecrement = () => updateQuantity(product.id, currentQuantity - 1);
+  const handleIncrement = () =>
+    updateQuantity(product.id, currentQuantity + 1, cartItem?.selectedWeight);
+  const handleDecrement = () =>
+    updateQuantity(product.id, currentQuantity - 1, cartItem?.selectedWeight);
 
   return (
     <motion.div

@@ -90,7 +90,8 @@ const OrderSummaryPanel = ({
                     </p>
                   </div>
                   <p className="text-xs sm:text-sm font-bold text-foreground">
-                    ₹{price * item.quantity}
+                    {t("currency")}
+                    {price * item.quantity}
                   </p>
                 </div>
               );
@@ -104,7 +105,7 @@ const OrderSummaryPanel = ({
                 {t("subtotal")}
               </span>
               <span className="text-foreground font-medium text-xs sm:text-sm">
-                ₹{subtotal}
+                {t("currency")}{subtotal}
               </span>
             </div>
             {discount > 0 && (
@@ -113,7 +114,7 @@ const OrderSummaryPanel = ({
                   {t("discount")}
                 </span>
                 <span className="font-bold text-xs sm:text-sm">
-                  -₹{discount}
+                  -{t("currency")}{discount}
                 </span>
               </div>
             )}
@@ -123,7 +124,7 @@ const OrderSummaryPanel = ({
                   <Gift size={13} /> {t("couponDiscount")}
                 </span>
                 <span className="font-bold text-xs sm:text-sm">
-                  -₹{couponDiscount}
+                  -{t("currency")}{couponDiscount}
                 </span>
               </div>
             )}
@@ -139,7 +140,9 @@ const OrderSummaryPanel = ({
                     : "text-foreground",
                 )}
               >
-                {deliveryCharge === 0 ? t("free") : `₹${deliveryCharge}`}
+                {deliveryCharge === 0
+                  ? t("free")
+                  : `${t("currency")}${deliveryCharge}`}
               </span>
             </div>
           </div>
@@ -148,7 +151,8 @@ const OrderSummaryPanel = ({
           {totalSavings > 0 && (
             <div className="mt-3 p-2.5 rounded-xl bg-primary/5 border border-primary/10">
               <p className="text-xs font-bold text-primary flex items-center gap-1.5">
-                🎉 You're saving ₹{totalSavings} on this order!
+                {t("youSave")} {t("currency")}
+                {totalSavings} on this order!
               </p>
             </div>
           )}
@@ -172,7 +176,7 @@ const OrderSummaryPanel = ({
               </span>
               <div className="text-right">
                 <span className="text-xl sm:text-2xl font-black text-foreground">
-                  ₹{total}
+                  {t("currency")}{total}
                 </span>
               </div>
             </div>
@@ -198,14 +202,14 @@ const OrderSummaryPanel = ({
                 <>
                   {t("placeOrder")}
                   <span className="text-primary-foreground/70">•</span>
-                  <span>₹{total}</span>
+                  <span>{t("currency")}{total}</span>
                 </>
               )}
             </motion.button>
 
             {!isFormValid && (
               <p className="text-[11px] text-muted-foreground text-center mt-2.5">
-                Please complete all steps to place your order
+                {t("completeAllSteps")}
               </p>
             )}
           </div>
