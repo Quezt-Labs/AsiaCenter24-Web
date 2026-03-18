@@ -17,12 +17,19 @@ import {
   RotateCcw,
   Check,
   Share2,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { Product } from "@/types/product";
 import { useProductFaqs } from "@/hooks/useProductFaqs";
 import { useProducts } from "@/hooks/useProducts";
-import { useProductReviews, useCreateReview } from "@/hooks/useProductReviews";
+import {
+  useProductReviews,
+  useCreateReview,
+  useUpdateReview,
+  useDeleteReview,
+} from "@/hooks/useProductReviews";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   Accordion,
@@ -36,6 +43,7 @@ import { useRecentlyViewedStore } from "@/store/useRecentlyViewedStore";
 import ProductCard from "@/components/products/ProductCard";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function ProductDetailClient({ product }: { product: Product }) {
   const router = useRouter();
@@ -86,10 +94,15 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const { data: apiReviews } = useProductReviews(product.id);
   const reviews = apiReviews ?? [];
 
-  const { isAuthenticated, openAuthModal } = useAuthStore();
+  const { isAuthenticated, openAuthModal, user } = useAuthStore();
   const createReviewMutation = useCreateReview(product.id);
+  const updateReviewMutation = useUpdateReview(product.id);
+  const deleteReviewMutation = useDeleteReview(product.id);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editRating, setEditRating] = useState(5);
+  const [editComment, setEditComment] = useState("");
 
   const handleAddToCart = () => {
     addItem(product, quantity, selectedWeight);
@@ -588,51 +601,162 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   {t("loginToReview")}
                 </button>
               )}
-              {reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="p-4 bg-card rounded-xl border border-border/50"
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-primary">
-                        {review.userName.charAt(0)}
-                      </span>
+              {reviews.map((review) => {
+                const isOwnReview = !!user?.id && review.userId === user.id;
+                const isEditing = editingReviewId === review.id;
+
+                return (
+                  <div
+                    key={review.id}
+                    className="p-4 bg-card rounded-xl border border-border/50"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 mb-2 flex-1 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-primary">
+                            {review.userName.charAt(0)}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-foreground">
+                            {review.userName}
+                          </p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-0.5">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  size={11}
+                                  className={
+                                    i < review.rating
+                                      ? "fill-amber-400 text-amber-400"
+                                      : "text-muted"
+                                  }
+                                />
+                              ))}
+                            </div>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground">
+                              {review.date}
+                            </span>
+                            {review.verified && (
+                              <span className="text-[10px] sm:text-xs text-primary font-semibold">
+                                ✓ {t("verified")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {isOwnReview && !isEditing && (
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingReviewId(review.id);
+                              setEditRating(review.rating);
+                              setEditComment(review.comment);
+                            }}
+                            className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                            aria-label={t("editReview")}
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!confirm(t("deleteReviewConfirm"))) return;
+                              deleteReviewMutation.mutate(review.id, {
+                                onSuccess: () =>
+                                  toast.success(t("reviewDeleted")),
+                                onError: () =>
+                                  toast.error(t("tryAgain") ?? "Try again"),
+                              });
+                            }}
+                            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                            aria-label={t("deleteReview")}
+                            disabled={deleteReviewMutation.isPending}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-foreground">
-                        {review.userName}
-                      </p>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="flex items-center gap-0.5">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              size={11}
-                              className={
-                                i < review.rating
-                                  ? "fill-amber-400 text-amber-400"
-                                  : "text-muted"
-                              }
-                            />
+
+                    {isEditing ? (
+                      <div className="mt-3 space-y-3">
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setEditRating(star)}
+                              className="p-1"
+                            >
+                              <Star
+                                size={18}
+                                className={
+                                  star <= editRating
+                                    ? "fill-amber-400 text-amber-400"
+                                    : "text-muted"
+                                }
+                              />
+                            </button>
                           ))}
                         </div>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground">
-                          {review.date}
-                        </span>
-                        {review.verified && (
-                          <span className="text-[10px] sm:text-xs text-primary font-semibold">
-                            ✓ {t("verified")}
-                          </span>
-                        )}
+                        <textarea
+                          value={editComment}
+                          onChange={(e) => setEditComment(e.target.value)}
+                          placeholder={t("writeReviewPlaceholder")}
+                          className="w-full min-h-[80px] px-3 py-2 text-sm rounded-lg border border-border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          maxLength={500}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              if (!editComment.trim()) return;
+                              updateReviewMutation.mutate(
+                                {
+                                  id: review.id,
+                                  input: {
+                                    rating: editRating,
+                                    comment: editComment.trim(),
+                                  },
+                                },
+                                {
+                                  onSuccess: () => {
+                                    setEditingReviewId(null);
+                                    toast.success(t("reviewUpdated"));
+                                  },
+                                  onError: () =>
+                                    toast.error(t("tryAgain") ?? "Try again"),
+                                }
+                              );
+                            }}
+                            disabled={
+                              !editComment.trim() ||
+                              updateReviewMutation.isPending
+                            }
+                            className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {updateReviewMutation.isPending
+                              ? t("saving")
+                              : t("saveChanges")}
+                          </button>
+                          <button
+                            onClick={() => setEditingReviewId(null)}
+                            className="px-4 py-2 border border-border text-sm font-medium rounded-lg hover:bg-muted"
+                          >
+                            {t("cancel")}
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <p className="text-muted-foreground text-xs sm:text-sm">
+                        {review.comment}
+                      </p>
+                    )}
                   </div>
-                  <p className="text-muted-foreground text-xs sm:text-sm">
-                    {review.comment}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

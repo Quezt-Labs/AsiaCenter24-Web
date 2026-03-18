@@ -32,23 +32,23 @@ export function useCreateReview(productId: string) {
   });
 }
 
-export function useUpdateReview() {
+export function useUpdateReview(productId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateReviewInput }) =>
       updateReview(id, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["product-reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["product-reviews", productId] });
     },
   });
 }
 
-export function useDeleteReview() {
+export function useDeleteReview(productId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteReview(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["product-reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["product-reviews", productId] });
     },
   });
 }

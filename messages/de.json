@@ -142,5 +142,16 @@
   "previousPage": "Zurück",
   "nextPage": "Weiter",
   "page": "Seite",
-  "showMoreCategories": "Mehr anzeigen"
+  "showMoreCategories": "Mehr anzeigen",
+  "writeReview": "Bewertung schreiben",
+  "writeReviewPlaceholder": "Teilen Sie Ihre Erfahrung mit diesem Produkt...",
+  "submitReview": "Bewertung absenden",
+  "submitting": "Wird gesendet...",
+  "loginToReview": "Anmelden, um eine Bewertung zu schreiben",
+  "editReview": "Bearbeiten",
+  "deleteReview": "Löschen",
+  "saveChanges": "Änderungen speichern",
+  "deleteReviewConfirm": "Diese Bewertung löschen?",
+  "reviewDeleted": "Bewertung gelöscht",
+  "reviewUpdated": "Bewertung aktualisiert"
 }

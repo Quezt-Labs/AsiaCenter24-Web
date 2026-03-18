@@ -18,6 +18,7 @@ function mapApiReviewToReview(apiRev: ApiReview): Review {
   }
   return {
     id: apiRev.id,
+    userId: apiRev.userId ?? apiRev.user_id,
     userName: apiRev.userName ?? apiRev.user_name ?? "Anonymous",
     rating: apiRev.rating,
     comment: apiRev.comment,
