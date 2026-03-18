@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
@@ -87,12 +88,13 @@ const Footer = () => {
           {/* Brand */}
           <div className="col-span-2 lg:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-xl gradient-hero flex items-center justify-center">
-                <span className="text-lg">🛒</span>
-              </div>
-              <span className="text-lg font-bold text-foreground">
-                Fresh<span className="text-primary">Mart</span>
-              </span>
+              <Image
+                src="/Asai24.png"
+                alt="Asia Center International Food"
+                width={160}
+                height={48}
+                className="h-12 w-auto object-contain"
+              />
             </Link>
             <p className="text-muted-foreground mb-5 max-w-sm text-sm leading-relaxed">
               Your trusted partner for fresh groceries and daily essentials.
@@ -179,7 +181,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-10 pt-6 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-muted-foreground text-xs">
-            © {currentYear} FreshMart. {t("allRightsReserved")}.
+            © {currentYear} Asia Center International Food. {t("allRightsReserved")}.
           </p>
           <div className="flex items-center gap-2.5">
             {socialLinks.map((social) => (

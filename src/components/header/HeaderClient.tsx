@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { Search, ShoppingCart, Heart, User, Menu, X } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -153,15 +154,19 @@ const HeaderClient = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <motion.div
-              whileHover={{ rotate: [0, -5, 5, 0] }}
-              transition={{ duration: 0.5 }}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl gradient-hero flex items-center justify-center shadow-sm"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+              className="relative h-12 sm:h-14 w-auto"
             >
-              <span className="text-lg sm:text-xl">🛒</span>
+              <Image
+                src="/Asai24.png"
+                alt="Asia Center International Food"
+                width={180}
+                height={56}
+                className="h-12 sm:h-14 w-auto object-contain"
+                priority
+              />
             </motion.div>
-            <span className="text-lg sm:text-xl font-bold text-foreground hidden sm:block">
-              Asia<span className="text-[#bcbe4b]">Center24</span>
-            </span>
           </Link>
 
           {/* Search Bar - Desktop */}
