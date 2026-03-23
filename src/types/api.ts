@@ -25,6 +25,9 @@ export interface ApiWeightOption {
   price: number;
   originalPrice?: number;
   original_price?: number;
+  id?: string;
+  variantId?: string;
+  variant_id?: string;
 }
 
 export interface ApiVariant {

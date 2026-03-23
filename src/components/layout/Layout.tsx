@@ -1,5 +1,6 @@
 import Header from "./Header";
 import Footer from "./Footer";
+import CartSyncEffect from "./CartSyncEffect";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,6 +9,7 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col">
+      <CartSyncEffect />
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />

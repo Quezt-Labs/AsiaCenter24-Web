@@ -4,7 +4,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import {
+  Minus,
+  Plus,
+  Trash2,
+  ShoppingBag,
+  ArrowRight,
+  Loader2,
+  AlertTriangle,
+} from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { cn } from "@/lib/utils";
@@ -14,6 +22,8 @@ export default function CartPage() {
   const locale = useLocale();
   const {
     items,
+    isSyncing,
+    hasUnavailableItems,
     updateQuantity,
     removeItem,
     getSubtotal,
@@ -34,7 +44,7 @@ export default function CartPage() {
     }
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && !isSyncing) {
     return (
       <div className="container-app py-16 text-center">
         <div className="max-w-md mx-auto">
@@ -57,11 +67,35 @@ export default function CartPage() {
     );
   }
 
+  if (items.length === 0 && isSyncing) {
+    return (
+      <div className="container-app py-24 flex flex-col items-center justify-center gap-4">
+        <Loader2 size={40} className="animate-spin text-primary" />
+        <p className="text-muted-foreground">{t("loading")}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container-app py-6">
-      <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-6">
-        {t("yourCart")} ({items.length} {t("items")})
-      </h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
+          {t("yourCart")} ({items.length} {t("items")})
+        </h1>
+        {isSyncing && (
+          <span className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 size={16} className="animate-spin" />
+            {t("loading")}
+          </span>
+        )}
+      </div>
+
+      {hasUnavailableItems && (
+        <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200">
+          <AlertTriangle size={20} className="shrink-0" />
+          <p className="text-sm font-medium">{t("cartUnavailableItems")}</p>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Cart Items */}

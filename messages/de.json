@@ -191,5 +191,6 @@
   "minOrder": "Mindestbestellwert",
   "codeCopied": "Code kopiert",
   "orderConfirmationMessage": "Wir haben eine Bestätigungs-E-Mail mit Ihren Bestelldetails gesendet. Sie können Ihre Bestellung jederzeit auf der Bestellseite verfolgen.",
-  "deliveryWindow": "Zwischen 9:00 und 18:00 Uhr"
+  "deliveryWindow": "Zwischen 9:00 und 18:00 Uhr",
+  "cartUnavailableItems": "Einige Artikel sind möglicherweise nicht auf Lager. Prüfen Sie die Verfügbarkeit vor dem Checkout."
 }

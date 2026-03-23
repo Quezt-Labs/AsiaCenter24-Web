@@ -1,10 +1,37 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { Product, CartItem } from '@/types/product';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { Product, CartItem } from "@/types/product";
+import {
+  getCart,
+  addToCart,
+  updateCartItem,
+  removeCartItem,
+  clearCartApi,
+} from "@/api/cart";
+import { useAuthStore } from "@/store/useAuthStore";
+import { toast } from "sonner";
+
+function getVariantId(
+  product: Product,
+  selectedWeight: string,
+): string | undefined {
+  const wo = product.weightOptions.find((w) => w.weight === selectedWeight);
+  return (wo as { variantId?: string } | undefined)?.variantId;
+}
 
 interface CartState {
   items: CartItem[];
+  isSyncing: boolean;
+  hasUnavailableItems: boolean;
+
+  setItems: (items: CartItem[]) => void;
+  fetchCart: () => Promise<void>;
   addItem: (product: Product, quantity?: number, weight?: string) => void;
+  addItemAsync: (
+    product: Product,
+    quantity?: number,
+    weight?: string,
+  ) => Promise<void>;
   removeItem: (productId: string, selectedWeight?: string) => void;
   updateQuantity: (
     productId: string,
@@ -19,42 +46,130 @@ interface CartState {
   getTotal: () => number;
 }
 
+function addItemLocal(
+  set: (fn: (s: CartState) => Partial<CartState>) => void,
+  get: () => CartState,
+  product: Product,
+  quantity: number,
+  selectedWeight: string,
+) {
+  set((state) => {
+    const existingItem = state.items.find(
+      (item) =>
+        item.product.id === product.id &&
+        item.selectedWeight === selectedWeight,
+    );
+    const variantId = getVariantId(product, selectedWeight);
+    const newItem: CartItem = {
+      product,
+      quantity: existingItem ? existingItem.quantity + quantity : quantity,
+      selectedWeight,
+      variantId,
+    };
+    if (existingItem) {
+      return {
+        items: state.items.map((item) =>
+          item.product.id === product.id &&
+          item.selectedWeight === selectedWeight
+            ? newItem
+            : item,
+        ),
+      };
+    }
+    return { items: [...state.items, newItem] };
+  });
+}
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      isSyncing: false,
+      hasUnavailableItems: false,
+
+      setItems: (items) => set({ items }),
+
+      fetchCart: async () => {
+        const isAuth = useAuthStore.getState().isAuthenticated;
+        if (!isAuth) return;
+        set({ isSyncing: true });
+        try {
+          const result = await getCart("IN");
+          set({
+            items: result.items,
+            hasUnavailableItems: result.hasUnavailableItems,
+            isSyncing: false,
+          });
+        } catch {
+          set({ isSyncing: false });
+        }
+      },
 
       addItem: (product, quantity = 1, weight) => {
-        const selectedWeight = weight || product.weightOptions[0]?.weight || '';
-        set((state) => {
-          const existingItem = state.items.find(
-            (item) => item.product.id === product.id && item.selectedWeight === selectedWeight
-          );
+        const selectedWeight = weight || product.weightOptions[0]?.weight || "";
+        const isAuth = useAuthStore.getState().isAuthenticated;
+        const variantId = getVariantId(product, selectedWeight);
 
-          if (existingItem) {
-            return {
-              items: state.items.map((item) =>
-                item.product.id === product.id && item.selectedWeight === selectedWeight
-                  ? { ...item, quantity: item.quantity + quantity }
-                  : item
-              ),
-            };
+        if (isAuth && variantId) {
+          get().addItemAsync(product, quantity, selectedWeight);
+        } else {
+          addItemLocal(set, get, product, quantity, selectedWeight);
+          if (isAuth && !variantId) {
+            console.warn(
+              "Cart: Product variant has no variantId; not syncing to backend.",
+            );
           }
+        }
+      },
 
-          return {
-            items: [...state.items, { product, quantity, selectedWeight }],
-          };
-        });
+      addItemAsync: async (product, quantity = 1, weight) => {
+        const selectedWeight = weight || product.weightOptions[0]?.weight || "";
+        const variantId = getVariantId(product, selectedWeight);
+        if (!variantId) {
+          addItemLocal(set, get, product, quantity, selectedWeight);
+          return;
+        }
+        try {
+          await addToCart(variantId, quantity);
+          await get().fetchCart();
+        } catch (err: unknown) {
+          const msg =
+            (err as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message ?? "";
+          toast.error(
+            msg?.toLowerCase().includes("stock")
+              ? "Insufficient stock"
+              : "Failed to add to cart",
+          );
+        }
       },
 
       removeItem: (productId, selectedWeight) => {
-        set((state) => ({
-          items: state.items.filter(
-            (item) =>
-              item.product.id !== productId ||
-              (selectedWeight != null && item.selectedWeight !== selectedWeight),
-          ),
-        }));
+        const state = get();
+        const item = state.items.find(
+          (i) =>
+            i.product.id === productId &&
+            (selectedWeight == null || i.selectedWeight === selectedWeight),
+        );
+        const isAuth = useAuthStore.getState().isAuthenticated;
+
+        if (isAuth && item?.variantId) {
+          set({ isSyncing: true });
+          removeCartItem(item.variantId)
+            .then(() => get().fetchCart())
+            .catch(() => {
+              set({ isSyncing: false });
+              toast.error("Failed to remove item");
+            });
+        } else {
+          set((s) => ({
+            items: s.items.filter(
+              (i) =>
+                i.product.id !== productId ||
+                (selectedWeight != null && i.selectedWeight !== selectedWeight),
+            ),
+          }));
+        }
       },
 
       updateQuantity: (productId, quantity, selectedWeight) => {
@@ -63,56 +178,81 @@ export const useCartStore = create<CartState>()(
           return;
         }
 
-        set((state) => ({
-          items: state.items.map((item) =>
-            item.product.id === productId &&
-            (selectedWeight == null || item.selectedWeight === selectedWeight)
-              ? { ...item, quantity }
-              : item
-          ),
-        }));
+        const state = get();
+        const item = state.items.find(
+          (i) =>
+            i.product.id === productId &&
+            (selectedWeight == null || i.selectedWeight === selectedWeight),
+        );
+        const isAuth = useAuthStore.getState().isAuthenticated;
+
+        if (isAuth && item?.variantId) {
+          set({ isSyncing: true });
+          updateCartItem(item.variantId, quantity)
+            .then(() => get().fetchCart())
+            .catch(() => {
+              set({ isSyncing: false });
+              toast.error("Failed to update quantity");
+            });
+        } else {
+          set((s) => ({
+            items: s.items.map((i) =>
+              i.product.id === productId &&
+              (selectedWeight == null || i.selectedWeight === selectedWeight)
+                ? { ...i, quantity }
+                : i,
+            ),
+          }));
+        }
       },
 
       clearCart: () => {
-        set({ items: [] });
+        const isAuth = useAuthStore.getState().isAuthenticated;
+        if (isAuth) {
+          set({ isSyncing: true });
+          clearCartApi()
+            .then(() => set({ items: [], isSyncing: false }))
+            .catch(() => {
+              set({ isSyncing: false });
+              toast.error("Failed to clear cart");
+            });
+        } else {
+          set({ items: [] });
+        }
       },
 
-      getItemCount: () => {
-        return get().items.reduce((total, item) => total + item.quantity, 0);
-      },
+      getItemCount: () =>
+        get().items.reduce((total, item) => total + item.quantity, 0),
 
-      getSubtotal: () => {
-        return get().items.reduce((total, item) => {
-          const weightOption = item.product.weightOptions.find(
-            (w) => w.weight === item.selectedWeight
+      getSubtotal: () =>
+        get().items.reduce((total, item) => {
+          const wo = item.product.weightOptions.find(
+            (w) => w.weight === item.selectedWeight,
           );
-          const price = weightOption?.price || item.product.price;
+          const price = wo?.price ?? item.product.price;
           return total + price * item.quantity;
-        }, 0);
-      },
+        }, 0),
 
-      getDiscount: () => {
-        return get().items.reduce((total, item) => {
-          const weightOption = item.product.weightOptions.find(
-            (w) => w.weight === item.selectedWeight
+      getDiscount: () =>
+        get().items.reduce((total, item) => {
+          const wo = item.product.weightOptions.find(
+            (w) => w.weight === item.selectedWeight,
           );
-          const originalPrice = weightOption?.originalPrice || item.product.originalPrice;
-          const price = weightOption?.price || item.product.price;
-          return total + (originalPrice - price) * item.quantity;
-        }, 0);
-      },
+          const orig = wo?.originalPrice ?? item.product.originalPrice;
+          const price = wo?.price ?? item.product.price;
+          return total + (orig - price) * item.quantity;
+        }, 0),
 
       getDeliveryCharge: () => {
         const subtotal = get().getSubtotal();
         return subtotal >= 499 ? 0 : 40;
       },
 
-      getTotal: () => {
-        return get().getSubtotal() + get().getDeliveryCharge();
-      },
+      getTotal: () => get().getSubtotal() + get().getDeliveryCharge(),
     }),
     {
-      name: 'cart-storage',
-    }
-  )
+      name: "cart-storage",
+      partialize: (state) => ({ items: state.items }),
+    },
+  ),
 );

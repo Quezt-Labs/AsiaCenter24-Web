@@ -217,5 +217,6 @@
   "minOrder": "Min. order",
   "codeCopied": "Code copied",
   "orderConfirmationMessage": "We've sent a confirmation email with your order details. You can track your order anytime from the orders page.",
-  "deliveryWindow": "Between 9:00 AM - 6:00 PM"
+  "deliveryWindow": "Between 9:00 AM - 6:00 PM",
+  "cartUnavailableItems": "Some items may be out of stock. Check availability before checkout."
 }

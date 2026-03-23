@@ -30,6 +30,7 @@ export interface WeightOption {
   weight: string;
   price: number;
   originalPrice: number;
+  variantId?: string;
 }
 
 export interface NutritionalInfo {
@@ -54,6 +55,7 @@ export interface CartItem {
   product: Product;
   quantity: number;
   selectedWeight: string;
+  variantId?: string;
 }
 
 export interface WishlistItem {

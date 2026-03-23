@@ -2,14 +2,27 @@ import api from "@/lib/api";
 import type { ApiProduct, ApiProductFaq } from "@/types/api";
 import type { Product, NutritionalInfo } from "@/types/product";
 
-function mapWeightOption(opt: {
-  weight: string;
-  price: number;
-  originalPrice?: number;
-  original_price?: number;
-}) {
+function mapWeightOption(
+  opt: {
+    weight: string;
+    price: number;
+    originalPrice?: number;
+    original_price?: number;
+    id?: string;
+    variantId?: string;
+    variant_id?: string;
+  },
+  variantId?: string
+) {
   const orig = opt.originalPrice ?? opt.original_price ?? opt.price;
-  return { weight: opt.weight, price: opt.price, originalPrice: orig };
+  const vid =
+    opt.variantId ?? opt.variant_id ?? opt.id ?? variantId;
+  return {
+    weight: opt.weight,
+    price: opt.price,
+    originalPrice: orig,
+    ...(vid && { variantId: vid }),
+  };
 }
 
 const PLACEHOLDER_IMAGE =
@@ -24,11 +37,18 @@ export function mapApiProductToProduct(apiProd: ApiProduct): Product {
     "";
   const categoryName = cat?.name ?? "";
   const weightOpts = apiProd.weightOptions ?? apiProd.weight_options ?? [];
-  const variants = apiProd.variants ?? [];
-  const firstVariant = variants[0] as
-    | { price?: number; originalPrice?: number; original_price?: number; weight?: string }
-    | undefined;
+  const variants = (apiProd.variants ?? []) as Array<{
+    id?: string;
+    weight?: string;
+    price?: number;
+    originalPrice?: number;
+    original_price?: number;
+  }>;
+  const firstVariant = variants[0];
   const hasWeightOpts = weightOpts.length > 0;
+  const variantByWeight = new Map(
+    variants.filter((v) => v.id && v.weight).map((v) => [v.weight!, v.id!])
+  );
   const basePrice =
     apiProd.price ??
     firstVariant?.price ??
@@ -67,8 +87,20 @@ export function mapApiProductToProduct(apiProd: ApiProduct): Product {
       (baseOrig > 0 ? Math.round((1 - basePrice / baseOrig) * 100) || 0 : 0),
     unit: apiProd.unit ?? "kg",
     weightOptions: hasWeightOpts
-      ? weightOpts.map(mapWeightOption)
-      : [{ weight: "1 unit", price: basePrice, originalPrice: baseOrig }],
+      ? weightOpts.map((opt) => {
+          const wo = opt as { weight?: string; id?: string; variantId?: string; variant_id?: string };
+          const vid =
+            wo.variantId ?? wo.variant_id ?? wo.id ?? variantByWeight.get(wo.weight ?? "");
+          return mapWeightOption(opt, vid);
+        })
+      : [
+          {
+            weight: "1 unit",
+            price: basePrice,
+            originalPrice: baseOrig,
+            ...(firstVariant?.id && { variantId: firstVariant.id }),
+          },
+        ],
     image: mainImage || PLACEHOLDER_IMAGE,
     images: images.length > 0 ? images : [mainImage || PLACEHOLDER_IMAGE],
     rating,
